@@ -1,0 +1,42 @@
+@model List<TroTot.Web.Models.UtilityBill>
+@{
+    ViewData["Title"] = "Hóa đơn & Điện nước";
+    ViewData["Active"] = "bills";
+    ViewData["DashboardLayout"] = true;
+    var rooms = ViewBag.Rooms as List<TroTot.Web.Models.Room> ?? new();
+    var roomTitles = ViewBag.RoomTitles as Dictionary<int, string> ?? new();
+    var billingMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">THU CHI NHÀ TRỌ</span><h1>Hóa đơn &amp; Điện nước</h1><p>Lập hóa đơn theo số điện, nước và phí phát sinh.</p></div></header>
+  <section class="admin-data-card owner-form-card">
+    <div class="admin-management-card-title"><h2>Lập hóa đơn</h2></div>
+    @if (rooms.Count == 0) { <p class="owner-empty-hint">Bạn cần đăng phòng trước khi lập hóa đơn.</p> }
+    else
+    {
+      <form method="post" action="/chu-tro/hoa-don" class="owner-form owner-form-grid">
+        @Html.AntiForgeryToken()
+        <div class="owner-form-errors" asp-validation-summary="ModelOnly"></div>
+        <label>Phòng<select name="RoomId" required><option value="">Chọn phòng</option>@foreach (var room in rooms) { <option value="@room.Id">@room.Title</option> }</select></label>
+        <label>Tháng<input type="date" name="BillingMonth" value="@billingMonth.ToString("yyyy-MM-dd")" required /></label>
+        <label>Số điện (kWh)<input type="number" name="ElectricityKwh" min="0" required /></label>
+        <label>Số nước (m³)<input type="number" name="WaterM3" min="0" required /></label>
+        <label>Phí khác (đ)<input type="number" name="OtherFees" min="0" value="0" required /></label>
+        <div class="owner-form-actions"><button class="admin-action-button primary" type="submit">Tạo hóa đơn</button></div>
+      </form>
+    }
+  </section>
+  <section class="admin-data-card owner-table-card">
+    <div class="admin-management-card-title"><h2>Hóa đơn đã lập</h2><span>@Model.Count hóa đơn</span></div>
+    @if (Model.Count == 0) { <div class="admin-empty">Chưa có hóa đơn nào.</div> }
+    else { <div class="admin-table-scroll"><table class="admin-table admin-management-table">
+      <thead><tr><th>PHÒNG</th><th>THÁNG</th><th>ĐIỆN</th><th>NƯỚC</th><th>PHÍ KHÁC</th><th>TỔNG CỘNG</th><th>TRẠNG THÁI</th><th></th></tr></thead>
+      <tbody>@foreach (var bill in Model)
+      {
+        var room = rooms.FirstOrDefault(item => item.Id == bill.RoomId);
+        var total = (long)bill.ElectricityKwh * (room?.ElectricPrice ?? 0) + (long)bill.WaterM3 * (room?.WaterPrice ?? 0) + bill.OtherFees;
+        <tr><td>@roomTitles.GetValueOrDefault(bill.RoomId, "Phòng đã xóa")</td><td>@bill.BillingMonth.ToString("MM/yyyy")</td><td>@bill.ElectricityKwh kWh</td><td>@bill.WaterM3 m³</td><td>@bill.OtherFees.ToString("N0") đ</td><td>@total.ToString("N0") đ</td><td><span class="admin-status @(bill.IsPaid ? "" : "pending")">@(bill.IsPaid ? "Đã thanh toán" : "Chưa thanh toán")</span></td><td><form method="post" action="/chu-tro/hoa-don/@bill.Id/thanh-toan">@Html.AntiForgeryToken()<button class="admin-action-button @(bill.IsPaid ? "" : "primary")" type="submit">@(bill.IsPaid ? "Mở lại" : "Đã thu")</button></form></td></tr>
+      }</tbody>
+    </table></div> }
+  </section>
+</main>

@@ -1,0 +1,39 @@
+@model List<TroTot.Web.Models.RepairRequest>
+@{
+    ViewData["Title"] = "Yêu cầu sửa chữa";
+    ViewData["Active"] = "repairs";
+    ViewData["DashboardLayout"] = true;
+    var rooms = ViewBag.Rooms as List<TroTot.Web.Models.Room> ?? new();
+    var roomTitles = ViewBag.RoomTitles as Dictionary<int, string> ?? new();
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">BẢO TRÌ NHÀ TRỌ</span><h1>Yêu cầu sửa chữa</h1><p>Ghi nhận và cập nhật tiến độ sửa chữa các phòng.</p></div></header>
+  <section class="admin-data-card owner-form-card">
+    <div class="admin-management-card-title"><h2>Tạo yêu cầu</h2></div>
+    @if (rooms.Count == 0) { <p class="owner-empty-hint">Bạn cần có phòng đăng trước khi tạo yêu cầu sửa chữa.</p> }
+    else
+    {
+      <form method="post" action="/chu-tro/sua-chua" class="owner-form owner-form-grid">
+        @Html.AntiForgeryToken()
+        <div class="owner-form-errors" asp-validation-summary="ModelOnly"></div>
+        <label>Phòng<select name="RoomId" required><option value="">Chọn phòng</option>@foreach (var room in rooms) { <option value="@room.Id">@room.Title</option> }</select></label>
+        <label>Tiêu đề<input name="Title" maxlength="160" required /></label>
+        <label class="owner-form-wide">Mô tả<textarea name="Description" maxlength="2000" rows="3" required></textarea></label>
+        <div class="owner-form-actions"><button class="admin-action-button primary" type="submit">Ghi nhận yêu cầu</button></div>
+      </form>
+    }
+  </section>
+  <section class="admin-data-card owner-table-card">
+    <div class="admin-management-card-title"><h2>Danh sách yêu cầu</h2><span>@Model.Count yêu cầu</span></div>
+    @if (Model.Count == 0) { <div class="admin-empty">Chưa có yêu cầu sửa chữa nào.</div> }
+    else { <div class="admin-table-scroll"><table class="admin-table admin-management-table">
+      <thead><tr><th>PHÒNG</th><th>YÊU CẦU</th><th>NGÀY TẠO</th><th>TRẠNG THÁI</th><th>CẬP NHẬT</th></tr></thead>
+      <tbody>@foreach (var request in Model)
+      {
+        <tr><td>@roomTitles.GetValueOrDefault(request.RoomId, "Phòng đã xóa")</td><td><strong>@request.Title</strong><span class="admin-subtext">@request.Description</span></td><td>@request.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td><span class="admin-status @(request.Status == TroTot.Web.Models.RepairStatus.Completed ? "" : "pending")">@(request.Status switch { TroTot.Web.Models.RepairStatus.New => "Mới", TroTot.Web.Models.RepairStatus.InProgress => "Đang xử lý", _ => "Hoàn tất" })</span></td><td>
+          <form method="post" action="/chu-tro/sua-chua/@request.Id/trang-thai" class="admin-inline-form">@Html.AntiForgeryToken()<select name="status" aria-label="Trạng thái yêu cầu" onchange="this.form.requestSubmit()"><option value="0" selected="@(request.Status == TroTot.Web.Models.RepairStatus.New ? "selected" : null)">Mới</option><option value="1" selected="@(request.Status == TroTot.Web.Models.RepairStatus.InProgress ? "selected" : null)">Đang xử lý</option><option value="2" selected="@(request.Status == TroTot.Web.Models.RepairStatus.Completed ? "selected" : null)">Hoàn tất</option></select></form>
+        </td></tr>
+      }</tbody>
+    </table></div> }
+  </section>
+</main>

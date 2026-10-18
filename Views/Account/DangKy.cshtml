@@ -1,0 +1,199 @@
+@model TroTot.Web.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng Ký Tài Khoản | TroTot.vn";
+    ViewData["Description"] = "Tạo tài khoản TroTot.vn miễn phí để tìm phòng trọ, đặt lịch xem phòng và nhận tư vấn.";
+    ViewData["Icon"] = "🏠";
+    Layout = "_AuthLayout";
+}
+
+<div class="form-page-container">
+  <a class="auth-home-link" href="/">← Về trang chủ</a>
+  <div class="form-page-card">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <a href="/" style="display:inline-flex;align-items:center;gap:8px;font-size:24px;font-weight:900;color:#f1f5f9;text-decoration:none;">
+        <span>🏠</span> TroTot<span style="color:#ff6b35;">.vn</span>
+      </a>
+    </div>
+    <h1 class="form-page-title">Tạo Tài Khoản</h1>
+    <p class="form-page-sub">Đăng ký miễn phí, tìm phòng ngay hôm nay</p>
+
+    <!-- Social Login -->
+    <partial name="_ValidationBox" />
+
+    <div class="social-login-btns">
+      <button class="social-login-btn" onclick="socialLogin('google')">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Google
+      </button>
+      <button class="social-login-btn" onclick="socialLogin('facebook')">
+        <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Facebook
+      </button>
+    </div>
+
+    <div class="form-divider"><span>hoặc đăng ký với email</span></div>
+
+    <!-- Role Selection -->
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:13px;font-weight:700;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Bạn là:</label>
+      <div style="display:flex;gap:10px;">
+        <button class="role-btn active" id="roleTenant" onclick="selectRole('tenant', this)">
+          <span>👤</span> Người thuê
+        </button>
+        <button class="role-btn" id="roleOwner" onclick="selectRole('owner', this)">
+          <span>🏠</span> Chủ trọ
+        </button>
+      </div>
+    </div>
+
+    <form id="registerForm" asp-controller="Account" asp-action="DangKy" method="post" onsubmit="return checkRegister()" style="display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="selectedRole" name="Role" value="tenant" />
+      <div class="form-field">
+        <label>Họ và tên đầy đủ *</label>
+        <input type="text" id="regName" name="FullName" value="@Model?.FullName" placeholder="Nguyễn Văn A" required class="form-input" />
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Email *</label>
+          <input type="email" id="regEmail" name="Email" value="@Model?.Email" placeholder="example@@email.com" required class="form-input" />
+        </div>
+        <div class="form-field">
+          <label>Số điện thoại *</label>
+          <input type="tel" id="regPhone" name="Phone" value="@Model?.Phone" placeholder="0901234567" required class="form-input" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Mật khẩu *</label>
+        <div style="position:relative;">
+          <input type="password" id="regPass" name="Password" placeholder="Tối thiểu 8 ký tự" required class="form-input" style="padding-right:44px;" />
+          <button type="button" onclick="togglePass('regPass')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#64748b;font-size:16px;background:none;border:none;cursor:pointer;">👁</button>
+        </div>
+        <div class="pass-strength" id="passStrength" style="display:none;">
+          <div class="pass-bar" id="passBar"></div>
+          <span id="passLabel"></span>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Xác nhận mật khẩu *</label>
+        <input type="password" id="regPass2" name="ConfirmPassword" placeholder="Nhập lại mật khẩu" required class="form-input" />
+      </div>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:#94a3b8;line-height:1.5;">
+        <input type="checkbox" id="agreeTerms" name="AgreeTerms" value="true" required style="margin-top:3px;" />
+        Tôi đồng ý với <a href="/dieu-khoan" style="color:#ff8c42;font-weight:600;">Điều khoản dịch vụ</a> và <a href="/bao-mat" style="color:#ff8c42;font-weight:600;">Chính sách bảo mật</a>
+      </label>
+      <button type="submit" class="btn-primary w-full" style="margin-top:4px;justify-content:center;font-size:16px;padding:14px;">
+        Tạo Tài Khoản
+      </button>
+    </form>
+
+    <div class="form-link-row">Đã có tài khoản? <a href="/dang-nhap">Đăng nhập ngay</a></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" style="display:none;"></div>
+
+<style>
+.role-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.role-btn.active {
+  background: rgba(255,107,53,0.12);
+  border-color: #ff6b35;
+  color: #ff8c42;
+}
+.pass-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.pass-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  transition: all 0.3s;
+}
+#passLabel { font-size: 12px; font-weight: 600; white-space: nowrap; }
+</style>
+
+@section Scripts {
+<script>
+function selectRole(role, btn) {
+  document.getElementById('selectedRole').value = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function togglePass(id) {
+  const input = document.getElementById(id);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+document.getElementById('regPass')?.addEventListener('input', function() {
+  const val = this.value;
+  const strength = document.getElementById('passStrength');
+  const bar = document.getElementById('passBar');
+  const label = document.getElementById('passLabel');
+
+  if (val.length === 0) { strength.style.display = 'none'; return; }
+  strength.style.display = 'flex';
+
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  const levels = [
+    { color: '#ef4444', text: 'Yếu', width: '25%' },
+    { color: '#f97316', text: 'Trung bình', width: '50%' },
+    { color: '#eab308', text: 'Khá', width: '75%' },
+    { color: '#22c55e', text: 'Mạnh', width: '100%' }
+  ];
+  const level = levels[Math.min(score - 1, 3)] || levels[0];
+  bar.style.background = level.color;
+  bar.style.width = level.width;
+  label.textContent = level.text;
+  label.style.color = level.color;
+});
+
+function checkRegister() {
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  if (pass !== pass2) { showToast('❌ Mật khẩu xác nhận không khớp!', 'error'); return false; }
+  if (pass.length < 8) { showToast('❌ Mật khẩu phải có ít nhất 8 ký tự!', 'error'); return false; }
+  return true;
+}
+
+function socialLogin(provider) {
+  showToast(`🔗 Đang kết nối với ${provider === 'google' ? 'Google' : 'Facebook'}...`, 'success');
+  setTimeout(() => { window.location.href = '/'; }, 1500);
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.className = 'toast ' + type;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 3500);
+}
+</script>
+}

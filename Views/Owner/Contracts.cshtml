@@ -1,0 +1,42 @@
+@model List<TroTot.Web.Models.RentalContract>
+@{
+    ViewData["Title"] = "Hợp đồng";
+    ViewData["Active"] = "contracts";
+    ViewData["DashboardLayout"] = true;
+    var rooms = ViewBag.Rooms as List<TroTot.Web.Models.Room> ?? new();
+    var tenants = ViewBag.Tenants as List<TroTot.Web.Models.AppUser> ?? new();
+    var roomTitles = ViewBag.RoomTitles as Dictionary<int, string> ?? new();
+    var tenantNames = ViewBag.TenantNames as Dictionary<int, string> ?? new();
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">THUÊ NHÀ</span><h1>Hợp đồng</h1><p>Tạo và theo dõi hợp đồng thuê phòng.</p></div></header>
+  <section class="admin-data-card owner-form-card">
+    <div class="admin-management-card-title"><h2>Tạo hợp đồng</h2></div>
+    @if (rooms.Count == 0 || tenants.Count == 0) { <p class="owner-empty-hint">Cần có phòng đăng và tài khoản người thuê đang hoạt động để lập hợp đồng.</p> }
+    else
+    {
+      <form method="post" action="/chu-tro/hop-dong" class="owner-form owner-form-grid">
+        @Html.AntiForgeryToken()
+        <div class="owner-form-errors" asp-validation-summary="ModelOnly"></div>
+        <label>Phòng<select name="RoomId" required><option value="">Chọn phòng</option>@foreach (var room in rooms) { <option value="@room.Id">@room.Title</option> }</select></label>
+        <label>Người thuê<select name="TenantId" required><option value="">Chọn người thuê</option>@foreach (var tenant in tenants) { <option value="@tenant.Id">@tenant.FullName · @tenant.Email</option> }</select></label>
+        <label>Ngày bắt đầu<input type="date" name="StartDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" required /></label>
+        <label>Ngày kết thúc<input type="date" name="EndDate" /></label>
+        <label>Tiền thuê/tháng (đ)<input type="number" name="MonthlyRent" min="0" required /></label>
+        <label>Tiền đặt cọc (đ)<input type="number" name="DepositAmount" min="0" required /></label>
+        <div class="owner-form-actions"><button class="admin-action-button primary" type="submit">Tạo hợp đồng</button></div>
+      </form>
+    }
+  </section>
+  <section class="admin-data-card owner-table-card">
+    <div class="admin-management-card-title"><h2>Hợp đồng đã tạo</h2><span>@Model.Count hợp đồng</span></div>
+    @if (Model.Count == 0) { <div class="admin-empty">Chưa có hợp đồng.</div> }
+    else { <div class="admin-table-scroll"><table class="admin-table admin-management-table">
+      <thead><tr><th>PHÒNG</th><th>NGƯỜI THUÊ</th><th>THỜI HẠN</th><th>TIỀN THUÊ/THÁNG</th><th>ĐẶT CỌC</th></tr></thead>
+      <tbody>@foreach (var contract in Model)
+      {
+        <tr><td>@(roomTitles.GetValueOrDefault(contract.RoomId, "Phòng đã xóa"))</td><td>@(tenantNames.GetValueOrDefault(contract.TenantId, "Tài khoản đã xóa"))</td><td>@contract.StartDate.ToString("dd/MM/yyyy") – @(contract.EndDate?.ToString("dd/MM/yyyy") ?? "Không thời hạn")</td><td>@contract.MonthlyRent.ToString("N0") đ</td><td>@contract.DepositAmount.ToString("N0") đ</td></tr>
+      }</tbody>
+    </table></div> }
+  </section>
+</main>

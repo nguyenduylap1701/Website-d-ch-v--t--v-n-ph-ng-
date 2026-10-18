@@ -1,0 +1,17 @@
+@model TroTot.Web.ViewModels.OwnerReportViewModel
+@{
+    ViewData["Title"] = "Báo cáo thống kê";
+    ViewData["Active"] = "reports";
+    ViewData["DashboardLayout"] = true;
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">TỔNG HỢP HOẠT ĐỘNG</span><h1>Báo cáo thống kê</h1><p>Số liệu các tin đăng, hợp đồng và khoản cần xử lý của bạn.</p></div></header>
+  <section class="admin-metrics owner-report-grid">
+    <article class="admin-metric"><span class="admin-metric-icon">⌂</span><strong>@Model.TotalRooms</strong><span>Tổng phòng</span><small>@Model.ActiveRooms đang hoạt động · @Model.PendingRooms chờ duyệt</small></article>
+    <article class="admin-metric teal"><span class="admin-metric-icon">♟</span><strong>@Model.TotalTenants</strong><span>Người thuê</span><small>Đã liên kết qua hợp đồng</small></article>
+    <article class="admin-metric purple"><span class="admin-metric-icon">▤</span><strong>@Model.ActiveContracts</strong><span>Hợp đồng còn hiệu lực</span><small>Hợp đồng thuê</small></article>
+    <article class="admin-metric orange"><span class="admin-metric-icon">₫</span><strong>@Model.MonthlyRevenue.ToString("N0") đ</strong><span>Doanh thu thuê dự kiến/tháng</span><small>Tổng tiền thuê hợp đồng còn hiệu lực</small></article>
+    <article class="admin-metric red"><span class="admin-metric-icon">▣</span><strong>@Model.UnpaidBills</strong><span>Hóa đơn chưa thu</span><small>Điện, nước và các phí khác</small></article>
+    <article class="admin-metric orange"><span class="admin-metric-icon">⚒</span><strong>@Model.OpenRepairs</strong><span>Sửa chữa đang mở</span><small>Chưa hoàn tất</small></article>
+  </section>
+</main>

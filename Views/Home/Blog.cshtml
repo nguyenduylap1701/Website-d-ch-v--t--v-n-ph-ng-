@@ -1,0 +1,468 @@
+@{
+    ViewData["Title"] = "Cẩm Nang & Kinh Nghiệm Thuê Trọ | TroTot.vn";
+    ViewData["Description"] = "Kinh nghiệm thuê phòng trọ từ A-Z: Cách tránh lừa đảo đặt cọc, đọc hợp đồng thuê chuẩn pháp lý, quyền và nghĩa vụ người thuê, phong thủy phòng trọ.";
+    ViewData["Icon"] = "📚";
+    ViewData["Active"] = "blog";
+    ViewData["NavScrolled"] = true;
+}
+
+@section Styles {
+<style>
+    .blog-hero {
+      background: linear-gradient(180deg, #090d1a 0%, #0f172a 100%);
+      padding: 120px 0 50px;
+      text-align: center;
+    }
+    .blog-filter-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 30px 0 40px;
+    }
+    .blog-tab {
+      padding: 10px 22px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #94a3b8;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .blog-tab:hover, .blog-tab.active {
+      background: #ff6b35;
+      border-color: #ff6b35;
+      color: white;
+      box-shadow: 0 4px 16px rgba(255,107,53,0.35);
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 28px;
+    }
+    @@media (max-width: 768px) {
+      .blog-grid { grid-template-columns: 1fr; }
+    }
+    .article-card {
+      background: linear-gradient(145deg, #111827, #1a2235);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    .article-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.5);
+      border-color: rgba(255,107,53,0.3);
+    }
+    .article-thumb {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .article-category {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(15,23,42,0.85);
+      color: #ff8c42;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,107,53,0.3);
+    }
+    .article-content {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .article-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #f1f5f9;
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+    .article-desc {
+      font-size: 13.5px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .article-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 14px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .read-more-btn {
+      color: #ff6b35;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Article Reading Modal */
+    .article-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .article-modal.active { display: flex; }
+    .article-modal-box {
+      background: #111827;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 36px;
+      position: relative;
+    }
+    .article-modal-body {
+      color: #cbd5e1;
+      font-size: 15px;
+      line-height: 1.8;
+      margin-top: 20px;
+    }
+    .article-modal-body h3 {
+      color: #f8fafc;
+      font-size: 19px;
+      margin: 24px 0 10px;
+    }
+    .article-modal-body ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+    .article-modal-body li {
+      margin-bottom: 8px;
+    }
+    .article-highlight {
+      background: rgba(255,107,53,0.08);
+      border-left: 4px solid #ff6b35;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 18px 0;
+      font-size: 14px;
+    }
+  </style>
+}
+
+<!-- ===== NAVIGATION ===== -->
+
+
+<!-- ===== HERO ===== -->
+<header class="blog-hero">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:12px;">
+      <span class="badge-dot"></span> Cẩm nang toàn diện cho người thuê trọ
+    </div>
+    <h1 style="font-size:38px;font-weight:900;color:white;margin-bottom:12px;">
+      Kinh Nghiệm Thuê Phòng Trọ <br /><span class="gradient-text">An Toàn & Tiết Kiệm</span>
+    </h1>
+    <p style="color:#94a3b8;font-size:15px;max-width:580px;margin:0 auto;">
+      Trang bị đầy đủ kiến thức pháp lý, kỹ năng nhận biết lừa đảo và mẹo bố trí không gian sống hoàn hảo.
+    </p>
+
+    <!-- Filter Tabs -->
+    <div class="blog-filter-tabs">
+      <button class="blog-tab active" onclick="filterArticles('all', this)">Tất cả bài viết</button>
+      <button class="blog-tab" onclick="filterArticles('scam', this)">🛡️ Tránh lừa đảo</button>
+      <button class="blog-tab" onclick="filterArticles('legal', this)">📝 Hợp đồng & Pháp lý</button>
+      <button class="blog-tab" onclick="filterArticles('guide', this)">🔍 Cách chọn phòng</button>
+      <button class="blog-tab" onclick="filterArticles('fengshui', this)">🏠 Phong thủy phòng trọ</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== ARTICLES GRID ===== -->
+<main class="container" style="padding-bottom:60px;">
+  <div class="blog-grid" id="articlesGrid">
+
+    <!-- Article 1: Cảnh giác lừa đảo -->
+    <article class="article-card" data-cat="scam" onclick="openArticleModal(1)">
+      <div class="article-thumb" style="background-image:url('https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80');">
+        <span class="article-category">🛡️ Cảnh Giác Lừa Đảo</span>
+      </div>
+      <div class="article-content">
+        <h2 class="article-title">7 Dấu Hiệu Nhận Biết Phòng Trọ Lừa Đảo & Bẫy Cọc Tinh Vi Nhất</h2>
+        <p class="article-desc">
+          Phòng máy lạnh đẹp như khách sạn nhưng giá chỉ 1 triệu? Yêu cầu cọc giữ chỗ gấp? Tìm hiểu ngay để không bị mất tiền oan!
+        </p>
+        <div class="article-footer">
+          <span>🕒 6 phút đọc • 14,200 xem</span>
+          <span class="read-more-btn">Đọc bài →</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Article 2: Hợp đồng thuê -->
+    <article class="article-card" data-cat="legal" onclick="openArticleModal(2)">
+      <div class="article-thumb" style="background-image:url('https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600&q=80');">
+        <span class="article-category">📝 Pháp Lý Thuê Trọ</span>
+      </div>
+      <div class="article-content">
+        <h2 class="article-title">Mẫu Hợp Đồng Thuê Nhà Chuẩn Pháp Lý: 5 Điều Khoản Phải Đọc Kỹ</h2>
+        <p class="article-desc">
+          Những cạm bẫy phạt tiền cọc vô lý, tăng giá điện nước giữa chừng và quy định trả phòng cần ghi rõ trong hợp đồng văn bản.
+        </p>
+        <div class="article-footer">
+          <span>🕒 8 phút đọc • 9,800 xem</span>
+          <span class="read-more-btn">Đọc bài →</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Article 3: Quyền & nghĩa vụ -->
+    <article class="article-card" data-cat="legal" onclick="openArticleModal(3)">
+      <div class="article-thumb" style="background-image:url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80');">
+        <span class="article-category">⚖️ Quyền & Nghĩa Vụ</span>
+      </div>
+      <div class="article-content">
+        <h2 class="article-title">Quyền Và Nghĩa Vụ Của Người Thuê Trọ Theo Luật Cư Trú Mới Nhất</h2>
+        <p class="article-desc">
+          Chủ trọ có quyền tự ý vào phòng bạn không? Quy định đăng ký tạm trú CT01, CT02 do ai thực hiện? Giải đáp chi tiết theo luật.
+        </p>
+        <div class="article-footer">
+          <span>🕒 5 phút đọc • 7,650 xem</span>
+          <span class="read-more-btn">Đọc bài →</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Article 4: Cách chọn phòng -->
+    <article class="article-card" data-cat="guide" onclick="openArticleModal(4)">
+      <div class="article-thumb" style="background-image:url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80');">
+        <span class="article-category">🔍 Cẩm Nang Chọn Phòng</span>
+      </div>
+      <div class="article-content">
+        <h2 class="article-title">Bí Quyết Đi Xem Phòng Trọ: Danh Sách 12 Điều Cần Kiểm Tra Tại Chỗ</h2>
+        <p class="article-desc">
+          Từ áp lực nước, mùi cống thoát sàn, độ dày cách âm đến tình trạng ngập nước mùa mưa hẻm vào – checklist kiểm tra 5 phút.
+        </p>
+        <div class="article-footer">
+          <span>🕒 7 phút đọc • 12,400 xem</span>
+          <span class="read-more-btn">Đọc bài →</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Article 5: Phong thủy phòng trọ -->
+    <article class="article-card" data-cat="fengshui" onclick="openArticleModal(5)">
+      <div class="article-thumb" style="background-image:url('https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&q=80');">
+        <span class="article-category">🏠 Phong Thủy Phòng Trọ</span>
+      </div>
+      <div class="article-content">
+        <h2 class="article-title">Phong Thủy Phòng Trọ: Cách Bố Trí Giường Ngủ, Gác Lửng Thu Hút Năng Lượng Tốt</h2>
+        <p class="article-desc">
+          Tránh gương chiếu thẳng vào giường, bố trí góc học tập/làm việc hướng ánh sáng, cây xanh thanh lọc không khí trong phòng hẹp.
+        </p>
+        <div class="article-footer">
+          <span>🕒 6 phút đọc • 8,100 xem</span>
+          <span class="read-more-btn">Đọc bài →</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Article 6: Mẹo tiết kiệm điện nước -->
+    <article class="article-card" data-cat="guide" onclick="openArticleModal(6)">
+      <div class="article-thumb" style="background-image:url('https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80');">
+        <span class="article-category">💡 Mẹo Tiết Kiệm</span>
+      </div>
+      <div class="article-content">
+        <h2 class="article-title">Cách Giảm 30% Hóa Đơn Điện Máy Lạnh Cho Phòng Trọ Mùa Nắng Nóng</h2>
+        <p class="article-desc">
+          Bật máy lạnh kết hợp quạt cây thế nào để mát sâu mà không tốn điện? Mẹo dán xốp cách nhiệt mái tôn cho gác lửng chi phí dưới 100k.
+        </p>
+        <div class="article-footer">
+          <span>🕒 4 phút đọc • 15,300 xem</span>
+          <span class="read-more-btn">Đọc bài →</span>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</main>
+
+<!-- ===== MODAL CHI TIẾT BÀI VIẾT ===== -->
+<div class="article-modal" id="articleModal">
+  <div class="article-modal-box">
+    <button onclick="closeArticleModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;">✕</button>
+    <div id="modalArticleCat" style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,107,53,0.15);color:#ff8c42;margin-bottom:12px;"></div>
+    <h2 id="modalArticleTitle" style="font-size:26px;font-weight:900;color:#f8fafc;line-height:1.35;"></h2>
+    <div style="font-size:12px;color:#64748b;margin-top:8px;" id="modalArticleMeta"></div>
+    
+    <div class="article-modal-body" id="modalArticleBody"></div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+
+@section Scripts {
+<script>
+  const ARTICLES_DATABASE = {
+    1: {
+      cat: "🛡️ Cảnh Giác Lừa Đảo",
+      title: "7 Dấu Hiệu Nhận Biết Phòng Trọ Lừa Đảo & Bẫy Cọc Tinh Vi Nhất",
+      meta: "Tác giả: Chuyên gia an toàn TroTot • Cập nhật: 05/10/2026",
+      body: `
+        <p>Thuê phòng trọ là nhu cầu thiết yếu nhưng cũng là mảnh đất màu mỡ cho các đối tượng lừa đảo, đặc biệt là sinh viên năm nhất và người mới chuyển đến thành phố lớn. Dưới đây là 7 dấu hiệu nhận diện kẻ gian:</p>
+        
+        <h3>1. Giá thuê rẻ bất thường so với vị trí</h3>
+        <p>Một căn phòng studio rộng 30m2 ngay trung tâm Quận 1 hay Quận 3, đầy đủ nội thất sang xịn nhưng lại được rao với giá chỉ 1.5 - 2 triệu đồng/tháng. Đây chắc chắn 100% là "mồi nhử".</p>
+
+        <h3>2. Yêu cầu chuyển khoản đặt cọc giữ chỗ trước khi xem phòng</h3>
+        <div class="article-highlight">
+          <strong>CẢNH BÁO:</strong> Kẻ lừa đảo thường nói: <em>"Đang có 5 người xếp hàng muốn lấy phòng này, em chuyển khoản trước 1 triệu để chị khóa phòng, lát chiều qua xem ưng thì ký hợp đồng, không ưng chị hoàn lại ngay"</em>. Sau khi bạn chuyển khoản, số điện thoại và Zalo của họ sẽ ngay lập tức bị chặn!
+        </div>
+
+        <h3>3. Viện lý do bận, cử người lạ dẫn đi nhưng bắt trả "phí xem phòng"</h3>
+        <p>Một số nhóm môi giới "chợ đen" bắt người thuê đóng 100.000đ - 200.000đ "phí chỉ đường" hoặc "phí mở cửa", sau đó dẫn đến những căn phòng ẩm thấp khác xa hình chụp hoặc thậm chí phòng đã có người ở.</p>
+
+        <h3>4. Hình ảnh trên mạng là hình đồ họa 3D hoặc ảnh khách sạn nước ngoài</h3>
+        <p>Hãy dùng tính năng tìm kiếm bằng hình ảnh của Google (Google Lens) để kiểm tra xem bức ảnh căn phòng đó có bị lấy cắp từ các trang thiết kế nội thất nước ngoài hay không.</p>
+
+        <h3>5. Lời khuyên vàng từ TroTot.vn</h3>
+        <ul>
+          <li>Chỉ xem và đặt cọc những phòng có nhãn <strong>✓ Đã xác minh</strong> trên TroTot.vn.</li>
+          <li>Luôn yêu cầu xem CMND/CCCD của người cho thuê và đối chiếu với sổ hồng hoặc hợp đồng ủy quyền quản lý nhà.</li>
+          <li>Chỉ giao tiền cọc khi đã có biên lai nhận tiền bằng giấy có chữ ký 2 bên và bản thảo hợp đồng rõ ràng.</li>
+        </ul>
+      `
+    },
+    2: {
+      cat: "📝 Pháp Lý Thuê Trọ",
+      title: "Mẫu Hợp Đồng Thuê Nhà Chuẩn Pháp Lý: 5 Điều Khoản Phải Đọc Kỹ",
+      meta: "Tác giả: Luật sư tư vấn BĐS • Cập nhật: 02/10/2026",
+      body: `
+        <p>Hợp đồng thuê nhà là căn cứ pháp lý duy nhất bảo vệ quyền lợi của bạn khi xảy ra tranh chấp. Đừng bao giờ ký vào hợp đồng chỉ sau một cái nhìn lướt qua!</p>
+        
+        <h3>1. Điều khoản về tiền đặt cọc và điều kiện hoàn cọc</h3>
+        <p>Cần quy định rõ ràng: Tiền cọc được hoàn trả 100% trong vòng bao nhiêu ngày kể từ khi chấm dứt hợp đồng. Người thuê cần báo trước bao nhiêu ngày (thường là 30 ngày) để không bị mất cọc.</p>
+
+        <h3>2. Bảng kê giá điện, nước và các khoản phí dịch vụ</h3>
+        <p>Ghi rõ đơn giá điện tính theo số kWh (ví dụ 3.500đ/kWh) dựa trên công tơ riêng của phòng; tiền nước tính theo khối (m3) hay theo đầu người/tháng. Tuyệt đối không chấp nhận các cụm từ mập mờ như "theo quy định chủ nhà".</p>
+
+        <h3>3. Biên bản bàn giao hiện trạng tài sản đính kèm</h3>
+        <div class="article-highlight">
+          Trước khi nhận phòng, hãy cùng chủ trọ chụp ảnh/quay video hiện trạng: tường nhà, máy lạnh, gác lửng, vòi sen, ổ khóa. Ghi chú lại mọi vết ố, đồ hỏng sẵn để khi trả phòng không bị vu khống bắt đền oan.
+        </div>
+
+        <h3>4. Trách nhiệm sửa chữa hư hỏng tự nhiên</h3>
+        <p>Hư hỏng do hao mòn tự nhiên (thấm dột trần, máy bơm nước hỏng, ống nước ngầm vỡ...) thuộc trách nhiệm của bên cho thuê. Hư hỏng do bên thuê làm vỡ (kính, bóng đèn, quạt) do bên thuê tự sửa.</p>
+      `
+    },
+    3: {
+      cat: "⚖️ Quyền & Nghĩa Vụ",
+      title: "Quyền Và Nghĩa Vụ Của Người Thuê Trọ Theo Luật Cư Trú Mới Nhất",
+      meta: "Tác giả: Ban Biên Tập TroTot • Cập nhật: 28/09/2026",
+      body: `
+        <p>Nhiều bạn sinh viên và người thuê trọ có tâm lý "đi ở nhờ", ngại va chạm nên bị một số chủ nhà áp đặt những quy định trái pháp luật.</p>
+        
+        <h3>1. Chủ trọ có được tự ý mở cửa vào phòng bạn không?</h3>
+        <p>Câu trả lời là <strong>KHÔNG</strong>. Theo Điều 22 Hiến pháp và Bộ luật Dân sự, nơi ở của công dân là bất khả xâm phạm. Khi bạn đã ký hợp đồng và trả tiền thuê, căn phòng là không gian riêng tư của bạn. Chủ trọ chỉ được vào khi có sự đồng ý của bạn hoặc trong các tình huống khẩn cấp (cháy nổ, cứu hộ).</p>
+
+        <h3>2. Trách nhiệm đăng ký tạm trú</h3>
+        <p>Theo Luật Cư trú, chủ cơ sở cho thuê có trách nhiệm thông báo và tạo điều kiện làm thủ tục đăng ký tạm trú (mẫu CT01/CT02) cho người thuê với công an phường/xã. Bạn cũng có thể tự đăng ký online qua Cổng dịch vụ công Quốc gia.</p>
+      `
+    },
+    4: {
+      cat: "🔍 Cẩm Nang Chọn Phòng",
+      title: "Bí Quyết Đi Xem Phòng Trọ: Danh Sách 12 Điều Cần Kiểm Tra Tại Chỗ",
+      meta: "Tác giả: Chuyên viên khảo sát TroTot • Cập nhật: 25/09/2026",
+      body: `
+        <p>Xem phòng trọ không chỉ là nhìn ngắm 4 bức tường. Hãy dành ra ít nhất 15 phút tại phòng và thực hiện đúng checklist này:</p>
+        <ul>
+          <li><strong>Mở thử vòi nước và xả bồn cầu:</strong> Kiểm tra áp lực nước có yếu không, nước có mùi hôi hoặc màu lạ không.</li>
+          <li><strong>Kiểm tra cách âm:</strong> Đóng kín cửa và lắng nghe tiếng xe cộ ngoài hẻm hoặc tiếng ồn phòng bên cạnh.</li>
+          <li><strong>Độ thông thoáng:</strong> Phòng có cửa sổ mở ra giếng trời hay trời thoáng không, tránh phòng kín bưng bí bách.</li>
+          <li><strong>Hỏi về tình trạng ngập nước:</strong> Quan sát chân tường các nhà xung quanh hẻm xem có vệt rêu ngập nước mùa mưa hay không.</li>
+          <li><strong>Sóng điện thoại và Wifi:</strong> Đảm bảo điện thoại của bạn bắt được ít nhất 3-4 vạch sóng trong phòng.</li>
+        </ul>
+      `
+    },
+    5: {
+      cat: "🏠 Phong Thủy Phòng Trọ",
+      title: "Phong Thủy Phòng Trọ: Cách Bố Trí Giường Ngủ, Gác Lửng Thu Hút Năng Lượng Tốt",
+      meta: "Tác giả: Chuyên gia phong thủy không gian sống • Cập nhật: 20/09/2026",
+      body: `
+        <p>Dù là phòng trọ diện tích khiêm tốn, việc sắp xếp nội thất hợp phong thủy sẽ mang lại cảm giác thư thái, ngủ ngon giấc và tập trung làm việc hiệu quả hơn.</p>
+        <h3>1. Tránh đặt giường ngủ đối diện thẳng cửa ra vào</h3>
+        <p>Cửa ra vào là nơi luồng khí ra vào liên tục, đặt giường thẳng cửa sẽ tạo cảm giác bất an, dễ giật mình khi có người đi qua lại ngoài hành lang.</p>
+        <h3>2. Không để gương soi chiếu thẳng vào giường</h3>
+        <p>Gương phản chiếu ánh sáng trong đêm dễ gây ảo giác, khiến bạn dễ mộng mị và ngủ không sâu giấc.</p>
+        <h3>3. Tận dụng cây xanh mini thanh lọc không khí</h3>
+        <p>Một chậu cây Kim Tiền, Lưỡi Hổ hoặc Trầu Bà đặt ở bệ cửa sổ vừa mang năng lượng mộc tươi mới, vừa giúp hút độc tố và bức xạ máy tính hiệu quả.</p>
+      `
+    },
+    6: {
+      cat: "💡 Mẹo Tiết Kiệm",
+      title: "Cách Giảm 30% Hóa Đơn Điện Máy Lạnh Cho Phòng Trọ Mùa Nắng Nóng",
+      meta: "Tác giả: Kỹ sư điện gia dụng • Cập nhật: 15/09/2026",
+      body: `
+        <p>Tiền điện máy lạnh thường chiếm đến 60% tổng hóa đơn điện hàng tháng. Áp dụng ngay các mẹo sau:</p>
+        <ul>
+          <li><strong>Để nhiệt độ ở mức 26°C - 27°C kèm quạt gió thoang thoảng:</strong> Quạt giúp luân chuyển khí mát khắp phòng, cảm giác mát mẻ tương đương 23°C nhưng tiết kiệm tới 25% điện.</li>
+          <li><strong>Vệ sinh màng lọc bụi 1 tháng/lần:</strong> Màng lọc bám bụi dày khiến máy nén phải chạy hết công suất liên tục, rất tốn điện.</li>
+          <li><strong>Dán xốp cách nhiệt trần mái tôn:</strong> Mua tấm xốp cách nhiệt mạ bạc (khoảng 20.000đ/m2) dán dưới trần gác lửng giúp giảm ngay 3-5 độ C nhiệt độ phòng.</li>
+        </ul>
+      `
+    }
+  };
+
+  function filterArticles(category, btn) {
+    document.querySelectorAll('.blog-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.article-card').forEach(card => {
+      if (category === 'all' || card.dataset.cat === category) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function openArticleModal(id) {
+    const art = ARTICLES_DATABASE[id];
+    if (!art) return;
+
+    document.getElementById('modalArticleCat').textContent = art.cat;
+    document.getElementById('modalArticleTitle').textContent = art.title;
+    document.getElementById('modalArticleMeta').textContent = art.meta;
+    document.getElementById('modalArticleBody').innerHTML = art.body;
+
+    document.getElementById('articleModal').classList.add('active');
+  }
+
+  function closeArticleModal() {
+    document.getElementById('articleModal').classList.remove('active');
+  }
+
+  // Close when clicking backdrop
+  document.getElementById('articleModal').addEventListener('click', (e) => {
+    if (e.target.id === 'articleModal') closeArticleModal();
+  });
+</script>
+}

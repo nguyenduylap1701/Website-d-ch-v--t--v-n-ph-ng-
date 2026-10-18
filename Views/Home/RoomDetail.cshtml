@@ -1,0 +1,224 @@
+@model TroTot.Web.Models.Room
+@using System.Globalization
+@{
+    ViewData["Title"] = Model.Title + " | TroTot.vn";
+    ViewData["Description"] = Model.Description ?? "Chi tiết phòng trọ";
+    ViewData["Icon"] = "🏠";
+    ViewData["Active"] = "rooms";
+    ViewData["NavScrolled"] = false;
+    var imageList = Model.Images.Any() ? Model.Images.Select(i => i.Path).ToList() : new List<string> { "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80" };
+    var amenities = Model.Amenities.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var relatedRooms = ViewBag.RelatedRooms as IEnumerable<TroTot.Web.Models.Room> ?? Enumerable.Empty<TroTot.Web.Models.Room>();
+    var reviews = ViewBag.RoomReviews as IEnumerable<TroTot.Web.Models.RoomReview> ?? Enumerable.Empty<TroTot.Web.Models.RoomReview>();
+    var primaryImage = imageList.First();
+}
+
+<section class="room-detail-hero">
+  <div class="container">
+    <div class="crumbs">
+      <a href="/">Trang chủ</a>
+      <span>›</span>
+      <a href="/rooms">Tìm phòng</a>
+      <span>›</span>
+      <span>@Model.District</span>
+    </div>
+    <div class="detail-header-row">
+      <div>
+        <span class="detail-badge">@(Model.IsVerified ? "✓ Đã xác minh" : "Hot")</span>
+        <h1 class="detail-title">@Model.Title</h1>
+      </div>
+      <div class="detail-price">@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", Model.Price) <span>/tháng</span></div>
+    </div>
+  </div>
+</section>
+
+<main class="room-detail-main">
+  <div class="container">
+    <div class="detail-layout">
+      <div class="detail-content">
+        <div class="gallery-grid">
+          <div class="gallery-main">
+            <img src="@primaryImage" alt="@Model.Title" />
+          </div>
+          <div class="gallery-side">
+            @for (var i = 1; i < Math.Min(imageList.Count, 4); i++)
+            {
+              <img src="@imageList[i]" alt="@Model.Title" />
+            }
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <h2>Thông tin phòng</h2>
+          <div class="detail-meta-grid">
+            <div><span>Quận</span><strong>@Model.District</strong></div>
+            <div><span>Diện tích</span><strong>@Model.Area m²</strong></div>
+            <div><span>Loại phòng</span><strong>@(Model.RoomType == "single" ? "Phòng đơn" : Model.RoomType == "shared" ? "Ở ghép" : "Căn hộ mini")</strong></div>
+            <div><span>Địa chỉ</span><strong>@Model.Address</strong></div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <h2>Mô tả</h2>
+          <p>@(Model.Description ?? "Phòng trọ sạch sẽ, tiện nghi đầy đủ, phù hợp cho sinh viên và người đi làm.")</p>
+        </div>
+
+        <div class="detail-card">
+          <h2>Tiện nghi</h2>
+          <div class="amenity-list">
+            @foreach (var item in amenities)
+            {
+              <span class="amenity-pill">@item</span>
+            }
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <h2>Nội quy</h2>
+          <ul class="rules-list">
+            @if (!string.IsNullOrWhiteSpace(Model.Rules))
+            {
+                foreach (var rule in Model.Rules.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    <li>@rule</li>
+                }
+            }
+            else
+            {
+                <li>Giữ vệ sinh chung.</li>
+                <li>Không hút thuốc trong phòng.</li>
+                <li>Giữ đồng phục và nhắc nhở các quy định nội khu.</li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <aside class="detail-sidebar">
+        <div class="booking-card" id="booking">
+          <div class="booking-header">
+            <span>Đặt lịch xem phòng</span>
+            <strong>@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", Model.Price)</strong>
+          </div>
+
+          <form asp-controller="Home" asp-action="DatLichXem" method="post" class="booking-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="RoomName" value="@Model.Title" />
+            <input type="hidden" name="returnUrl" value="/phong/@Model.Id" />
+            <div class="form-group">
+              <label>Họ tên</label>
+              <input type="text" name="Name" required placeholder="Nhập họ tên" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Số điện thoại</label>
+              <input type="tel" name="Phone" required placeholder="0901234567" class="form-input" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Ngày</label>
+                <input type="date" name="Date" required class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Giờ</label>
+                <input type="time" name="Time" required class="form-input" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Ghi chú</label>
+              <textarea name="Note" rows="3" class="form-input" placeholder="Bạn muốn xem vào khung giờ nào?"></textarea>
+            </div>
+            <button type="submit" class="btn-primary w-full">Đặt lịch xem ngay</button>
+          </form>
+        </div>
+
+        <div class="summary-card">
+          <h3>Chi phí gần gũi</h3>
+          <ul>
+            <li><span>Điện</span><strong>@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ" , Model.ElectricPrice)/kWh</strong></li>
+            <li><span>Nước</span><strong>@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ" , Model.WaterPrice)/người</strong></li>
+            <li><span>Internet</span><strong>@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ" , Model.InternetFee)</strong></li>
+            <li><span>Đặt cọc</span><strong>@Model.DepositMonths tháng</strong></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <section class="detail-card room-reviews" id="reviews">
+      <div class="room-reviews-heading">
+        <div><h2>Đánh giá phòng</h2><p>Chia sẻ trải nghiệm thực tế của bạn</p></div>
+        <span class="room-review-count">@reviews.Count() đánh giá</span>
+      </div>
+      @if (reviews.Any())
+      {
+        <div class="room-review-list">
+          @foreach (var review in reviews)
+          {
+            <article class="room-review-item">
+              <div class="room-review-meta">
+                <strong>@(review.User?.FullName ?? "Người thuê")</strong>
+                <span class="admin-rating" aria-label="@review.Rating trên 5 sao">@(new string('★', review.Rating))@(new string('☆', 5 - review.Rating))</span>
+                <time datetime="@review.CreatedAt.ToString("yyyy-MM-dd")">@review.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</time>
+              </div>
+              <p>@review.Content</p>
+            </article>
+          }
+        </div>
+      }
+      else
+      {
+        <p class="room-review-empty">Chưa có đánh giá được duyệt cho phòng này.</p>
+      }
+
+      @if (User.IsInRole(nameof(TroTot.Web.Models.UserRole.Tenant)))
+      {
+        <form method="post" action="/phong/@Model.Id/danh-gia" class="room-review-form">
+          @Html.AntiForgeryToken()
+          <h3>Viết đánh giá</h3>
+          <label for="review-rating">Số sao</label>
+          <select id="review-rating" name="rating" required>
+            <option value="">Chọn số sao</option>
+            <option value="5">5 sao – Rất hài lòng</option>
+            <option value="4">4 sao – Hài lòng</option>
+            <option value="3">3 sao – Bình thường</option>
+            <option value="2">2 sao – Chưa hài lòng</option>
+            <option value="1">1 sao – Không hài lòng</option>
+          </select>
+          <label for="review-content">Nội dung</label>
+          <textarea id="review-content" name="content" rows="4" maxlength="2000" required placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+          <button type="submit" class="btn-primary">Gửi đánh giá</button>
+          <small>Đánh giá sẽ hiển thị sau khi được quản trị viên duyệt.</small>
+        </form>
+      }
+      else if (!User.Identity?.IsAuthenticated == true)
+      {
+        <p class="room-review-login"><a href="/dang-nhap?returnUrl=%2Fphong%2F@(Model.Id)%23reviews">Đăng nhập tài khoản người thuê</a> để gửi đánh giá.</p>
+      }
+    </section>
+
+    @if (relatedRooms.Any())
+    {
+      <section class="related-section">
+        <div class="section-header left">
+          <div class="section-tag">Phòng tương tự</div>
+          <h2 class="section-title">Có thể bạn thích</h2>
+        </div>
+        <div class="rooms-grid-compact">
+          @foreach (var room in relatedRooms)
+          {
+             var roomImage = room.Images.FirstOrDefault()?.Path ?? "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80";
+             <article class="compact-room-card">
+               <img src="@roomImage" alt="@room.Title" />
+               <div class="compact-room-content">
+                 <div class="compact-room-head">
+                   <h3>@room.Title</h3>
+                   <strong>@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", room.Price)</strong>
+                 </div>
+                 <div class="compact-room-meta">📍 @room.District • @room.Area m²</div>
+                 <a href="/phong/@room.Id" class="btn-outline-primary">Xem chi tiết</a>
+               </div>
+             </article>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</main>

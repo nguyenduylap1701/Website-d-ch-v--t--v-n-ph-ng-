@@ -1,0 +1,53 @@
+@model List<TroTot.Web.Models.ContactMessage>
+@{
+    ViewData["Title"] = "Tin nhắn liên hệ";
+    ViewData["Active"] = "messages";
+    ViewData["DashboardLayout"] = true;
+    bool? handled = ViewBag.Handled;
+}
+
+<main class="admin-management">
+  <header class="admin-management-heading">
+    <div><span class="admin-kicker">HỘP THƯ LIÊN HỆ</span><h1>Tin nhắn liên hệ</h1><p>@ViewBag.TotalMessages tin nhắn · @ViewBag.UnhandledMessages chưa xử lý</p></div>
+  </header>
+
+  <nav class="admin-filter-tabs" aria-label="Lọc trạng thái tin nhắn">
+    <a class="@(!handled.HasValue ? "active" : "")" href="/quan-tri/tin-nhan">Tất cả</a>
+    <a class="@(handled == false ? "active" : "")" href="/quan-tri/tin-nhan?handled=false">Chưa xử lý</a>
+    <a class="@(handled == true ? "active" : "")" href="/quan-tri/tin-nhan?handled=true">Đã xử lý</a>
+  </nav>
+
+  <section class="admin-data-card">
+    <div class="admin-management-card-title"><h2>Yêu cầu từ khách hàng</h2><span>@Model.Count tin nhắn</span></div>
+    @if (Model.Count == 0)
+    {
+      <div class="admin-empty">Chưa có tin nhắn liên hệ nào.</div>
+    }
+    else
+    {
+      <div class="admin-table-scroll">
+        <table class="admin-table admin-management-table">
+          <thead><tr><th>NGƯỜI GỬI</th><th>SỐ ĐIỆN THOẠI</th><th>NỘI DUNG</th><th>TRẠNG THÁI</th><th>THỜI GIAN</th><th>THAO TÁC</th></tr></thead>
+          <tbody>
+          @foreach (var message in Model)
+          {
+            <tr>
+              <td><strong class="admin-room-title">@message.FullName</strong></td>
+              <td><a href="tel:@message.Phone">@message.Phone</a></td>
+              <td class="admin-message-content">@message.Content</td>
+              <td><span class="admin-status @(message.IsHandled ? "" : "pending")">@(message.IsHandled ? "Đã xử lý" : "Chưa xử lý")</span></td>
+              <td>@message.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+              <td>
+                <form method="post" action="/quan-tri/tin-nhan/@message.Id/xu-ly">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="admin-action-button @(message.IsHandled ? "" : "primary")">@(message.IsHandled ? "Mở lại" : "Đánh dấu đã xử lý")</button>
+                </form>
+              </td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

@@ -1,0 +1,16 @@
+@if (TempData["Success"] is string okMsg)
+{
+    <div class="flash-msg" style="position:fixed;top:90px;right:20px;z-index:100000;background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-weight:600;font-size:14px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:380px;">✅ @okMsg</div>
+}
+@if (TempData["Error"] is string errMsg)
+{
+    <div class="flash-msg" style="position:fixed;top:90px;right:20px;z-index:100000;background:#dc2626;color:#fff;padding:14px 20px;border-radius:12px;font-weight:600;font-size:14px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:380px;">❌ @errMsg</div>
+}
+@if (TempData["Success"] != null || TempData["Error"] != null)
+{
+    <script>
+        setTimeout(function () {
+            document.querySelectorAll('.flash-msg').forEach(function (el) { el.remove(); });
+        }, 5000);
+    </script>
+}

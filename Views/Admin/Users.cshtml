@@ -1,0 +1,88 @@
+@model List<TroTot.Web.Models.AppUser>
+@{
+    ViewData["Title"] = "Người dùng";
+    ViewData["Active"] = "users";
+    ViewData["DashboardLayout"] = true;
+    var search = (string?)ViewBag.Search ?? "";
+    TroTot.Web.Models.UserRole? role = ViewBag.Role;
+    bool? active = ViewBag.ActiveFilter;
+}
+
+<main class="admin-management">
+  <header class="admin-management-heading">
+    <div><span class="admin-kicker">QUẢN LÝ TÀI KHOẢN</span><h1>Người dùng</h1><p>@ViewBag.TotalUsers tài khoản trên hệ thống</p></div>
+  </header>
+
+  <form method="get" action="/quan-tri/nguoi-dung" class="admin-filter-bar">
+    <label class="admin-search-field"><span>⌕</span><input type="search" name="search" value="@search" placeholder="Tìm theo tên, email hoặc số điện thoại" /></label>
+    <select name="role" aria-label="Lọc theo vai trò">
+      <option value="">Tất cả vai trò</option>
+      <option value="@((int)TroTot.Web.Models.UserRole.Tenant)" selected="@(role == TroTot.Web.Models.UserRole.Tenant ? "selected" : null)">Người thuê</option>
+      <option value="@((int)TroTot.Web.Models.UserRole.Owner)" selected="@(role == TroTot.Web.Models.UserRole.Owner ? "selected" : null)">Chủ trọ</option>
+      <option value="@((int)TroTot.Web.Models.UserRole.Admin)" selected="@(role == TroTot.Web.Models.UserRole.Admin ? "selected" : null)">Quản trị viên</option>
+    </select>
+    <select name="active" aria-label="Lọc theo trạng thái">
+      <option value="">Tất cả trạng thái</option>
+      <option value="true" selected="@(active == true ? "selected" : null)">Đang hoạt động</option>
+      <option value="false" selected="@(active == false ? "selected" : null)">Đã khóa</option>
+    </select>
+    <button type="submit" class="admin-action-button primary">Lọc</button>
+    <a class="admin-action-button" href="/quan-tri/nguoi-dung">Xóa lọc</a>
+  </form>
+
+  <section class="admin-data-card">
+    <div class="admin-management-card-title"><h2>Danh sách tài khoản</h2><span>@Model.Count kết quả</span></div>
+    @if (Model.Count == 0)
+    {
+      <div class="admin-empty">Không tìm thấy tài khoản phù hợp.</div>
+    }
+    else
+    {
+      <div class="admin-table-scroll">
+        <table class="admin-table admin-management-table">
+          <thead><tr><th>NGƯỜI DÙNG</th><th>LIÊN HỆ</th><th>VAI TRÒ</th><th>TRẠNG THÁI</th><th>NGÀY TẠO</th><th>THAO TÁC</th></tr></thead>
+          <tbody>
+          @foreach (var user in Model)
+          {
+            <tr>
+              <td><strong class="admin-room-title">@user.FullName</strong><span class="admin-subtext">ID #@user.Id</span></td>
+              <td>@user.Email<span class="admin-subtext">@user.Phone</span></td>
+              <td>
+                @if (user.Role == TroTot.Web.Models.UserRole.Admin)
+                {
+                  <span class="admin-role-badge admin-role-admin">Quản trị viên</span>
+                }
+                else
+                {
+                  <form method="post" action="/quan-tri/nguoi-dung/@user.Id/vai-tro" class="admin-inline-form">
+                    @Html.AntiForgeryToken()
+                    <select name="role" aria-label="Vai trò của @user.FullName" onchange="this.form.requestSubmit()">
+                      <option value="@((int)TroTot.Web.Models.UserRole.Tenant)" selected="@(user.Role == TroTot.Web.Models.UserRole.Tenant ? "selected" : null)">Người thuê</option>
+                      <option value="@((int)TroTot.Web.Models.UserRole.Owner)" selected="@(user.Role == TroTot.Web.Models.UserRole.Owner ? "selected" : null)">Chủ trọ</option>
+                    </select>
+                  </form>
+                }
+              </td>
+              <td><span class="admin-status @(user.IsActive ? "" : "inactive")">@(user.IsActive ? "Hoạt động" : "Đã khóa")</span></td>
+              <td>@user.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+              <td>
+                @if (user.Role != TroTot.Web.Models.UserRole.Admin)
+                {
+                  <form method="post" action="/quan-tri/nguoi-dung/@user.Id/trang-thai" class="admin-inline-form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="admin-action-button @(user.IsActive ? "danger" : "primary")">@(user.IsActive ? "Khóa" : "Mở khóa")</button>
+                  </form>
+                }
+                else
+                {
+                  <span class="admin-subtext">Bảo vệ quản trị viên</span>
+                }
+              </td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

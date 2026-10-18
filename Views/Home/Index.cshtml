@@ -1,0 +1,65 @@
+@{
+    ViewData["Title"] = "Tìm phòng trọ dễ dàng | TroTot.vn";
+    ViewData["Description"] = "Tìm phòng trọ phù hợp, xem các phòng được quan tâm và tham khảo câu hỏi thường gặp.";
+    ViewData["Active"] = "home";
+}
+
+<main class="home-page">
+  <section class="home-search-section" aria-labelledby="homeSearchTitle">
+    <div class="container">
+      <div class="home-search-content">
+        <span class="section-tag">Tìm nơi ở phù hợp</span>
+        <h1 id="homeSearchTitle">Tìm phòng trọ <span class="gradient-text">nhanh chóng</span></h1>
+        <p>Chọn khu vực hoặc nhập từ khóa để xem phòng phù hợp với bạn.</p>
+        <div class="home-search-box">
+          <label class="home-search-keyword">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" id="heroSearch" placeholder="Tìm theo tên phòng, địa chỉ..." aria-label="Từ khóa tìm phòng" />
+          </label>
+          <label class="home-search-district">
+            <span aria-hidden="true">⌖</span>
+            <select id="heroDistrict" aria-label="Chọn khu vực">
+              <option value="">Tất cả khu vực</option>
+              <option value="Đống Đa">Đống Đa</option>
+              <option value="Cầu Giấy">Cầu Giấy</option>
+              <option value="Hà Đông">Hà Đông</option>
+              <option value="Nam Từ Liêm">Nam Từ Liêm</option>
+              <option value="Bắc Từ Liêm">Bắc Từ Liêm</option>
+              <option value="Ba Đình">Ba Đình</option>
+              <option value="Hoàng Mai">Hoàng Mai</option>
+            </select>
+          </label>
+          <button type="button" id="heroSearchBtn" class="btn-primary home-search-button">
+            <span aria-hidden="true">⌕</span> Tìm phòng
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section home-popular-section" aria-labelledby="popularRoomsTitle">
+    <div class="container">
+      <div class="home-section-heading">
+        <div>
+          <span class="section-tag">Được yêu thích</span>
+          <h2 class="section-title" id="popularRoomsTitle">Phòng trọ được quan tâm</h2>
+          <p class="section-subtitle">Khám phá những phòng trọ nổi bật đang có sẵn.</p>
+        </div>
+        <a href="/rooms" class="btn-outline-primary">Xem tất cả phòng <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="rooms-grid" id="roomsGrid" aria-live="polite">
+        <p class="empty-state">Đang tải danh sách phòng...</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section faq-section home-faq-section" id="faqSection" aria-labelledby="faqTitle">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Hỏi đáp</span>
+        <h2 class="section-title" id="faqTitle">Câu hỏi <span class="gradient-text">thường gặp</span></h2>
+      </div>
+      <div class="faq-grid" id="faqGrid"></div>
+    </div>
+  </section>
+</main>

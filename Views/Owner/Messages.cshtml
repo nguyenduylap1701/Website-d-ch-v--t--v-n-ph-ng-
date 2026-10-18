@@ -1,0 +1,34 @@
+@model List<TroTot.Web.Models.ViewingRequest>
+@{
+    ViewData["Title"] = "Tin nhắn đến";
+    ViewData["Active"] = "messages";
+    ViewData["DashboardLayout"] = true;
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">YÊU CẦU TỪ NGƯỜI THUÊ</span><h1>Tin nhắn đến</h1><p>@Model.Count yêu cầu xem phòng.</p></div></header>
+  <section class="admin-data-card">
+    <div class="admin-management-card-title"><h2>Yêu cầu xem phòng</h2><span>@Model.Count yêu cầu</span></div>
+    @if (Model.Count == 0)
+    {
+      <div class="admin-empty">Chưa có yêu cầu nào cho phòng của bạn.</div>
+    }
+    else
+    {
+      <div class="admin-table-scroll"><table class="admin-table admin-management-table">
+        <thead><tr><th>NGƯỜI GỬI</th><th>LIÊN HỆ</th><th>PHÒNG</th><th>THỜI GIAN XEM</th><th>GHI CHÚ</th><th>TRẠNG THÁI</th><th></th></tr></thead>
+        <tbody>@foreach (var request in Model)
+        {
+          <tr>
+            <td><strong class="admin-room-title">@request.Name</strong></td>
+            <td><a href="tel:@request.Phone">@request.Phone</a></td>
+            <td>@request.RoomName</td>
+            <td>@request.Date.ToString("dd/MM/yyyy") · @request.Time</td>
+            <td>@(string.IsNullOrWhiteSpace(request.Note) ? "—" : request.Note)</td>
+            <td><span class="admin-status @(request.IsHandled ? "" : "pending")">@(request.IsHandled ? "Đã xử lý" : "Mới")</span></td>
+            <td><form method="post" action="/chu-tro/tin-nhan/@request.Id/trang-thai">@Html.AntiForgeryToken()<button class="admin-action-button @(request.IsHandled ? "" : "primary")" type="submit">@(request.IsHandled ? "Mở lại" : "Đã xử lý")</button></form></td>
+          </tr>
+        }</tbody>
+      </table></div>
+    }
+  </section>
+</main>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"]</title>
+  @if (ViewData["Description"] is string desc && desc.Length > 0)
+  {
+    <meta name="description" content="@desc" />
+  }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+  <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>@(ViewData["Icon"] ?? "🏠")</text></svg>" />
+  @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+<partial name="_Alerts" />
+
+@RenderBody()
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

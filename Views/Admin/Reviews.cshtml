@@ -1,0 +1,66 @@
+@model List<TroTot.Web.Models.RoomReview>
+@{
+    ViewData["Title"] = "Đánh giá";
+    ViewData["Active"] = "reviews";
+    ViewData["DashboardLayout"] = true;
+    int? rating = ViewBag.Rating;
+    bool? published = ViewBag.Published;
+}
+
+<main class="admin-management">
+  <header class="admin-management-heading">
+    <div><span class="admin-kicker">CHẤT LƯỢNG DỊCH VỤ</span><h1>Đánh giá</h1><p>@ViewBag.TotalReviews đánh giá · Điểm trung bình @(((double)ViewBag.AverageRating).ToString("0.0")) / 5</p></div>
+  </header>
+
+  <form method="get" action="/quan-tri/danh-gia" class="admin-filter-bar">
+    <select name="rating" aria-label="Lọc theo số sao">
+      <option value="">Tất cả mức sao</option>
+      @for (var stars = 5; stars >= 1; stars--)
+      {
+        <option value="@stars" selected="@(rating == stars ? "selected" : null)">@stars sao</option>
+      }
+    </select>
+    <select name="published" aria-label="Lọc theo trạng thái hiển thị">
+      <option value="">Tất cả trạng thái</option>
+      <option value="false" selected="@(published == false ? "selected" : null)">Chờ duyệt / đã ẩn</option>
+      <option value="true" selected="@(published == true ? "selected" : null)">Đang hiển thị</option>
+    </select>
+    <button type="submit" class="admin-action-button primary">Lọc đánh giá</button>
+    <a href="/quan-tri/danh-gia" class="admin-action-button">Xóa lọc</a>
+  </form>
+
+  <section class="admin-data-card">
+    <div class="admin-management-card-title"><h2>Nội dung đánh giá</h2><span>@Model.Count kết quả</span></div>
+    @if (Model.Count == 0)
+    {
+      <div class="admin-empty">Chưa có đánh giá phù hợp với bộ lọc.</div>
+    }
+    else
+    {
+      <div class="admin-table-scroll">
+        <table class="admin-table admin-management-table">
+          <thead><tr><th>NGƯỜI ĐÁNH GIÁ</th><th>PHÒNG</th><th>SỐ SAO</th><th>NỘI DUNG</th><th>TRẠNG THÁI</th><th>THỜI GIAN</th><th>THAO TÁC</th></tr></thead>
+          <tbody>
+          @foreach (var review in Model)
+          {
+            <tr>
+              <td><strong class="admin-room-title">@(review.User?.FullName ?? "Tài khoản đã xóa")</strong></td>
+              <td>@(review.Room?.Title ?? "Phòng đã xóa")</td>
+              <td><span class="admin-rating" aria-label="@review.Rating trên 5 sao">@(new string('★', review.Rating))@(new string('☆', 5 - review.Rating))</span><small class="admin-subtext">@review.Rating / 5</small></td>
+              <td class="admin-message-content">@review.Content</td>
+              <td><span class="admin-status @(review.IsPublished ? "" : "pending")">@(review.IsPublished ? "Đang hiển thị" : "Đã ẩn")</span></td>
+              <td>@review.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+              <td>
+                <form method="post" action="/quan-tri/danh-gia/@review.Id/trang-thai">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="admin-action-button @(review.IsPublished ? "danger" : "primary")">@(review.IsPublished ? "Ẩn đánh giá" : "Duyệt")</button>
+                </form>
+              </td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</main>

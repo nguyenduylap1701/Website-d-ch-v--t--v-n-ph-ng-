@@ -1,0 +1,18 @@
+@model TroTot.Web.ViewModels.OwnerProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    ViewData["Active"] = "profile";
+    ViewData["DashboardLayout"] = true;
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">TÀI KHOẢN CHỦ TRỌ</span><h1>Hồ sơ cá nhân</h1><p>Cập nhật thông tin liên hệ của bạn.</p></div></header>
+  <section class="admin-data-card owner-form-card">
+    <form asp-action="Profile" method="post" class="owner-form">
+      @Html.AntiForgeryToken()
+      <label>Họ và tên<input asp-for="FullName" autocomplete="name" /><span asp-validation-for="FullName"></span></label>
+      <label>Email<input asp-for="Email" autocomplete="email" /><span asp-validation-for="Email"></span></label>
+      <label>Số điện thoại<input asp-for="Phone" autocomplete="tel" /><span asp-validation-for="Phone"></span></label>
+      <div class="owner-form-actions"><button class="admin-action-button primary" type="submit">Lưu hồ sơ</button><a href="/chu-tro/doi-mat-khau">Đổi mật khẩu</a></div>
+    </form>
+  </section>
+</main>

@@ -1,0 +1,36 @@
+@model List<TroTot.Web.Models.Room>
+@{
+    ViewData["Title"] = "Nhà trọ & Phòng";
+    ViewData["Active"] = "rooms";
+    ViewData["DashboardLayout"] = true;
+}
+<main class="admin-management">
+  <header class="admin-management-heading">
+    <div><span class="admin-kicker">QUẢN LÝ TÀI SẢN</span><h1>Nhà trọ &amp; Phòng</h1><p>@Model.Count tin đăng thuộc tài khoản của bạn.</p></div>
+    <a class="admin-action-button primary" href="/dang-tin">＋ Đăng tin mới</a>
+  </header>
+  <section class="admin-data-card">
+    <div class="admin-management-card-title"><h2>Danh sách tin đăng</h2><span>@Model.Count phòng</span></div>
+    @if (Model.Count == 0)
+    {
+      <div class="admin-empty">Bạn chưa có tin đăng nào. Hãy tạo tin đầu tiên để bắt đầu quản lý phòng.</div>
+    }
+    else
+    {
+      <div class="admin-table-scroll"><table class="admin-table admin-management-table">
+        <thead><tr><th>TIN ĐĂNG</th><th>ĐỊA CHỈ</th><th>GIÁ THUÊ</th><th>TRẠNG THÁI</th><th>NGÀY ĐĂNG</th><th></th></tr></thead>
+        <tbody>@foreach (var room in Model)
+        {
+          <tr>
+            <td><strong class="admin-room-title">@room.Title</strong><span class="admin-subtext">@room.Area m² · @room.RoomType</span></td>
+            <td>@room.Address<span class="admin-subtext">@room.District</span></td>
+            <td>@room.Price.ToString("N0") đ/tháng</td>
+            <td><span class="admin-status @(room.Status == TroTot.Web.Models.RoomStatus.Approved ? "" : "pending")">@(room.Status == TroTot.Web.Models.RoomStatus.Approved ? "Đang hiển thị" : room.Status == TroTot.Web.Models.RoomStatus.Pending ? "Chờ duyệt" : "Bị từ chối")</span></td>
+            <td>@room.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+            <td>@if (room.Status == TroTot.Web.Models.RoomStatus.Approved) { <a class="admin-action-button" href="/phong/@room.Id">Xem tin</a> }</td>
+          </tr>
+        }</tbody>
+      </table></div>
+    }
+  </section>
+</main>

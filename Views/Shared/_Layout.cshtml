@@ -1,0 +1,273 @@
+@{
+    string Act(string key) => (ViewData["Active"] as string) == key ? "active" : "";
+    var isDashboard = ViewData["DashboardLayout"] as bool? == true;
+    var isAdmin = User.IsInRole("Admin");
+    var isOwner = User.IsInRole(nameof(TroTot.Web.Models.UserRole.Owner));
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"]</title>
+  @if (ViewData["Description"] is string desc && desc.Length > 0)
+  {
+    <meta name="description" content="@desc" />
+  }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" data-spa-stylesheet />
+  <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" data-spa-stylesheet />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>@(ViewData["Icon"] ?? "🏠")</text></svg>" />
+  @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+<div id="spa-page" class="@(ViewData["PageClass"] as string)" data-layout-kind="@(isDashboard ? "admin" : "site")">
+<partial name="_Alerts" />
+@if (isDashboard)
+{
+<div class="admin-shell">
+  <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+    <a class="admin-brand" href="/quan-ly">
+      <span class="admin-brand-icon">▲</span>
+      <span><strong>TroTot</strong><small>@(isAdmin ? "QUẢN TRỊ HỆ THỐNG" : "KHÔNG GIAN CHỦ TRỌ")</small></span>
+    </a>
+    <nav class="admin-side-nav">
+      @if (isAdmin)
+      {
+        <a class="@Act("overview")" href="/quan-ly" title="Tổng quan"><span>▦</span>Tổng quan</a>
+        <a class="@Act("users")" href="/quan-tri/nguoi-dung" title="Người dùng"><span>♟</span>Người dùng</a>
+        <a class="@Act("listings")" href="/quan-tri/dang-tin" title="Quản lý đăng tin"><span>⌂</span>Quản lý đăng tin</a>
+        <a class="@Act("messages")" href="/quan-tri/tin-nhan" title="Tin nhắn liên hệ"><span>✉</span>Tin nhắn liên hệ</a>
+        <a class="@Act("reviews")" href="/quan-tri/danh-gia" title="Đánh giá"><span>★</span>Đánh giá</a>
+        <a href="/" data-no-spa title="Xem website"><span>↗</span>Xem website</a>
+      }
+      else
+      {
+        <a class="@Act("overview")" href="/quan-ly" title="Tổng quan"><span>▦</span>Tổng quan</a>
+        <a class="@Act("rooms")" href="/chu-tro/phong" title="Nhà trọ và phòng"><span>⌂</span>Nhà trọ &amp; Phòng</a>
+        <a class="@Act("tenants")" href="/chu-tro/nguoi-thue" title="Người thuê"><span>♟</span>Người thuê</a>
+        <a class="@Act("contracts")" href="/chu-tro/hop-dong" title="Hợp đồng"><span>▤</span>Hợp đồng</a>
+        <a class="@Act("bills")" href="/chu-tro/hoa-don" title="Hóa đơn và điện nước"><span>＄</span>Hóa đơn &amp; Điện nước</a>
+        <a class="@Act("repairs")" href="/chu-tro/sua-chua" title="Yêu cầu sửa chữa"><span>⚒</span>Yêu cầu sửa chữa</a>
+        <a href="/chu-tro/phong" title="Tin đã đăng"><span>▣</span>Tin đã đăng</a>
+        <a class="@Act("reports")" href="/chu-tro/bao-cao" title="Báo cáo thống kê"><span>▥</span>Báo cáo thống kê</a>
+        <a class="@Act("messages")" href="/chu-tro/tin-nhan" title="Tin nhắn đến"><span>✉</span>Tin nhắn đến</a>
+        <a href="/dang-tin"><span>＋</span>Đăng tin mới</a>
+        <a href="/quan-ly#requests"><span>◷</span>Yêu cầu xem phòng</a>
+        <a href="/" data-no-spa><span>↗</span>Xem website</a>
+      }
+    </nav>
+    <div class="admin-sidebar-user">
+      <span class="admin-avatar">@(User.Identity?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "A")</span>
+      <span><strong>@User.Identity?.Name</strong><small>@(User.IsInRole("Admin") ? "Quản trị viên" : "Chủ trọ")</small></span>
+    </div>
+  </aside>
+  <div class="admin-workspace">
+    <header class="admin-topbar">
+      <div><span class="admin-topbar-eyebrow">@(isAdmin ? "QUẢN TRỊ" : "KHÔNG GIAN CHỦ TRỌ")</span><strong>@(ViewData["Title"] ?? "Tổng quan")</strong></div>
+      <div class="admin-topbar-actions">
+        <span class="admin-date">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+        @if (!isAdmin)
+        {
+          <a class="admin-notification-link" href="/quan-ly#requests" aria-label="Thông báo yêu cầu xem phòng" title="Yêu cầu xem phòng">🔔</a>
+        }
+        <a class="admin-home-link" href="/" data-no-spa>← Về trang chủ</a>
+        @if (isAdmin)
+        {
+          <form asp-controller="Account" asp-action="DangXuat" method="post">
+            <button class="admin-logout" type="submit">Đăng xuất</button>
+          </form>
+        }
+        else
+        {
+          <details class="admin-account-dropdown">
+            <summary class="admin-account-summary">
+              <span class="admin-avatar">@(User.Identity?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "C")</span>
+              <span class="admin-account-name">@User.Identity?.Name</span>
+              <span aria-hidden="true">▾</span>
+            </summary>
+            <div class="admin-account-menu">
+              <a href="/chu-tro/ho-so">Hồ sơ cá nhân</a>
+              <a href="/chu-tro/tin-nhan">Tin nhắn đến</a>
+              <a href="/chu-tro/doi-mat-khau">Đổi mật khẩu</a>
+              <form asp-controller="Account" asp-action="DangXuat" method="post">
+                <button class="admin-logout" type="submit">Đăng xuất</button>
+              </form>
+            </div>
+          </details>
+        }
+      </div>
+    </header>
+    <div id="spa-content" class="admin-content">
+      @RenderBody()
+      @await RenderSectionAsync("Scripts", required: false)
+    </div>
+  </div>
+</div>
+}
+else
+{
+<nav id="navbar" class="navbar@(ViewData["NavScrolled"] is true ? " scrolled" : "")">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">TroTot<span class="logo-accent">.vn</span></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="nav-link @Act("home")">Trang Chủ</a></li>
+      <li><a href="/rooms" class="nav-link @Act("rooms")">Tìm Phòng</a></li>
+      <li><a href="/tu-van" class="nav-link @Act("tuvan")">Tư Vấn</a></li>
+      @if (isOwner)
+      {
+        <li class="nav-menu-item">
+          <details class="nav-dropdown">
+            <summary class="nav-link @Act("quanly")">Quản Lý <span class="nav-caret" aria-hidden="true">▾</span></summary>
+            <ul class="nav-dropdown-menu">
+              <li><a href="/quan-ly">Tổng quan</a></li>
+              <li><a href="/chu-tro/phong">Nhà trọ &amp; Phòng</a></li>
+              <li><a href="/chu-tro/nguoi-thue">Người thuê</a></li>
+              <li><a href="/chu-tro/hop-dong">Hợp đồng</a></li>
+              <li><a href="/chu-tro/hoa-don">Hóa đơn &amp; Điện nước</a></li>
+              <li><a href="/chu-tro/sua-chua">Yêu cầu sửa chữa</a></li>
+              <li><a href="/chu-tro/phong">Tin đã đăng</a></li>
+              <li><a href="/chu-tro/bao-cao">Báo cáo thống kê</a></li>
+            </ul>
+          </details>
+        </li>
+      }
+      else if (isAdmin)
+      {
+        <li><a href="/quan-ly" class="nav-link @Act("quanly")">Quản Lý</a></li>
+      }
+      @if (isOwner || isAdmin)
+      {
+        <li><a href="/dang-tin" class="nav-link @Act("dangtin")">Đăng Tin</a></li>
+      }
+      <li><a href="/blog" class="nav-link @Act("blog")">Kinh Nghiệm</a></li>
+      <li><a href="/lien-he" class="nav-link @Act("lienhe")">Liên Hệ</a></li>
+    </ul>
+    <div class="nav-actions">
+      @if (isOwner)
+      {
+        <a class="nav-notifications" href="/quan-ly#requests" aria-label="Thông báo yêu cầu xem phòng" title="Yêu cầu xem phòng">🔔</a>
+        <details class="nav-dropdown nav-account-dropdown">
+          <summary class="nav-account-summary">
+            <span class="nav-account-avatar" aria-hidden="true">@(User.Identity?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "C")</span>
+            <span class="nav-account-name">@User.Identity?.Name</span>
+            <span class="nav-caret" aria-hidden="true">▾</span>
+          </summary>
+          <ul class="nav-dropdown-menu nav-account-menu">
+            <li><a href="/chu-tro/ho-so">Hồ sơ cá nhân</a></li>
+            <li><a href="/chu-tro/tin-nhan">Tin nhắn đến</a></li>
+            <li><a href="/chu-tro/doi-mat-khau">Đổi mật khẩu</a></li>
+            <li>
+              <form asp-controller="Account" asp-action="DangXuat" method="post">
+                <button type="submit" class="nav-dropdown-logout">Đăng xuất</button>
+              </form>
+            </li>
+          </ul>
+        </details>
+      }
+      else if (User.Identity?.IsAuthenticated == true)
+      {
+        <span class="btn-ghost nav-user" title="@User.Identity.Name" style="cursor:default;"><span>👤 @User.Identity.Name</span></span>
+        <form asp-controller="Account" asp-action="DangXuat" method="post" style="display:inline;margin:0;">
+          <button type="submit" class="btn-primary">Đăng xuất</button>
+        </form>
+      }
+      else
+      {
+        <a href="/dang-nhap" id="btnLogin" class="btn-ghost">Đăng nhập</a>
+        <a href="/dang-ky" id="btnRegister" class="btn-primary">Đăng ký</a>
+      }
+      <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div id="spa-content">
+  @RenderBody()
+  @await RenderSectionAsync("Scripts", required: false)
+</div>
+
+<footer class="footer" id="footer">
+  <div class="footer-top">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo">
+            <span class="logo-icon">🏠</span>
+            <span class="logo-text">TroTot<span class="logo-accent">.vn</span></span>
+          </a>
+          <p class="footer-desc">Nền tảng tư vấn và tìm kiếm phòng trọ uy tín hàng đầu tại Hà Nội. Kết nối người thuê và chủ trọ một cách minh bạch, an toàn.</p>
+          <div class="footer-social">
+            <a href="#" class="social-btn" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="Zalo">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4-2.5c0 1.38-1.12 2.5-2.5 2.5S10 14.88 10 13.5v-1c0-1.38 1.12-2.5 2.5-2.5S15 11.12 15 12.5v1z"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.79 1.53V6.78a4.85 4.85 0 0 1-1.02-.09z"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="YouTube">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.95C5.12 20 12 20 12 20s6.88 0 8.59-.47a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon fill="#0a0e1a" points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-heading">Người Thuê</h4>
+          <ul class="footer-links">
+            <li><a href="/rooms">Tìm phòng trọ</a></li>
+            <li><a href="/rooms?type=single">Phòng đơn</a></li>
+            <li><a href="/rooms?type=shared">Ở ghép</a></li>
+            <li><a href="/rooms?type=mini">Căn hộ mini</a></li>
+            <li><a href="/#costCalculator">Tính chi phí</a></li>
+            <li><a href="/tu-van">Đặt lịch xem phòng</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-heading">Chủ Trọ</h4>
+          <ul class="footer-links">
+            <li><a href="/dang-tin">Đăng tin miễn phí</a></li>
+            <li><a href="/quan-ly">Quản lý tin đăng</a></li>
+            <li><a href="/quan-ly#requests">Yêu cầu xem phòng</a></li>
+            <li><a href="/quan-ly#messages">Tin nhắn từ người thuê</a></li>
+            <li><a href="/bang-gia">Bảng giá dịch vụ</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 class="footer-heading">Hỗ Trợ</h4>
+          <ul class="footer-links">
+            <li><a href="/blog">Kinh nghiệm thuê trọ</a></li>
+            <li><a href="/faq">Câu hỏi thường gặp</a></li>
+            <li><a href="/tu-van">Tư vấn miễn phí</a></li>
+            <li><a href="/lien-he">Liên hệ</a></li>
+            <li><a href="/dieu-khoan">Điều khoản dịch vụ</a></li>
+            <li><a href="/bao-mat">Chính sách bảo mật</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="footer-bottom-inner">
+        <p>© 2025 TroTot.vn – Tất cả quyền được bảo lưu</p>
+        <p>Được xây dựng với ❤️ tại Hà Nội</p>
+      </div>
+    </div>
+  </div>
+</footer>
+}
+</div>
+
+<script src="~/js/data.js" asp-append-version="true"></script>
+<script src="~/js/main.js" asp-append-version="true"></script>
+<script src="~/js/spa-navigation.js" asp-append-version="true"></script>
+</body>
+</html>

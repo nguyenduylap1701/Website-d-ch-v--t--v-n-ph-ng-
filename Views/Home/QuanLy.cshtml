@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Dashboard chủ trọ | TroTot.vn";
+    ViewData["Description"] = "Dashboard quản lý tin đăng, yêu cầu xem phòng và hiệu suất thuê trọ.";
+    ViewData["Icon"] = "📊";
+    ViewData["Active"] = "overview";
+    ViewData["NavScrolled"] = false;
+    ViewData["DashboardLayout"] = true;
+    var isAdmin = ViewBag.IsAdminDashboard as bool? == true;
+    var stats = ViewBag.Stats as dynamic ?? new { TotalRooms = 0, ActiveRooms = 0, PendingRooms = 0, NewRequests = 0 };
+    var recentRooms = ViewBag.RecentRooms as IEnumerable<TroTot.Web.Models.Room> ?? Enumerable.Empty<TroTot.Web.Models.Room>();
+    var recentRequests = ViewBag.RecentRequests as IEnumerable<TroTot.Web.Models.ViewingRequest> ?? Enumerable.Empty<TroTot.Web.Models.ViewingRequest>();
+    var pendingRooms = ViewBag.PendingRooms as IEnumerable<TroTot.Web.Models.Room> ?? Enumerable.Empty<TroTot.Web.Models.Room>();
+}
+
+@section Styles {
+<style>
+  .admin-content { min-height: calc(100vh - 68px); padding: 26px; }
+  .admin-dashboard { max-width: 1500px; margin: 0 auto; }
+  .admin-page-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:24px; }
+  .admin-page-heading h1 { margin:4px 0 0; font-size:1.65rem; letter-spacing:-.04em; color:#142238; }
+  .admin-page-heading p { margin:4px 0 0; color:#8290a5; font-size:.88rem; }
+  .admin-kicker { color:#8390a5; font-weight:800; font-size:.68rem; letter-spacing:.12em; }
+  .admin-primary-link { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px 16px; border-radius:8px; color:white; background:#0f766e; font-weight:700; font-size:.86rem; }
+  .admin-primary-link:hover { background:#0b625c; }
+  .admin-metrics { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+  .admin-metric { min-height:120px; padding:17px; background:#fff; border:1px solid #e3e9f1; border-radius:9px; box-shadow:0 2px 6px #14223808; }
+  .admin-metric-icon { display:grid; place-items:center; width:29px; height:29px; border-radius:8px; background:#eff6ff; color:#2563eb; font-size:.95rem; }
+  .admin-metric strong { display:block; margin-top:9px; color:#16243a; font-size:1.55rem; line-height:1.1; }
+  .admin-metric span { display:block; color:#69788e; font-size:.76rem; font-weight:700; }
+  .admin-metric small { display:block; color:#98a4b5; font-size:.67rem; margin-top:3px; }
+  .admin-metric.teal .admin-metric-icon { background:#e8f7f4; color:#0f766e; }
+  .admin-metric.orange .admin-metric-icon { background:#fff5e8; color:#d97706; }
+  .admin-metric.red .admin-metric-icon { background:#fff0f0; color:#dc2626; }
+  .admin-metric.purple .admin-metric-icon { background:#f5efff; color:#7c3aed; }
+  .admin-panels { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .admin-panel { min-width:0; background:#fff; border:1px solid #e3e9f1; border-radius:9px; overflow:hidden; }
+  .admin-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid #edf0f5; }
+  .admin-panel-heading h2 { margin:0; color:#1b2a40; font-size:.94rem; }
+  .admin-panel-heading a { color:#0f766e; font-size:.77rem; font-weight:700; }
+  .admin-table-scroll { overflow-x:auto; }
+  .admin-table { width:100%; border-collapse:collapse; white-space:nowrap; }
+  .admin-table th { padding:11px 14px; color:#8290a5; background:#fbfcfe; text-align:left; font-size:.64rem; letter-spacing:.06em; }
+  .admin-table td { padding:12px 14px; border-top:1px solid #edf0f5; color:#39485e; font-size:.76rem; }
+  .admin-table tbody tr:hover { background:#fafcff; }
+  .admin-room-title { color:#1e2c41; font-weight:700; }
+  .admin-subtext { display:block; margin-top:2px; color:#97a2b2; font-size:.67rem; }
+  .admin-status { display:inline-block; padding:4px 8px; border-radius:999px; background:#e8f7ef; color:#15803d; font-size:.65rem; font-weight:800; }
+  .admin-status.pending { background:#fff4e5; color:#b45309; }
+  .admin-review-list { list-style:none; padding:0; margin:0; }
+  .admin-review-list li { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 17px; border-bottom:1px solid #edf0f5; }
+  .admin-review-list li:last-child { border:0; }
+  .admin-review-actions { display:flex; gap:6px; }
+  .admin-review-actions a { padding:6px 9px; border-radius:6px; background:#eef6ff; color:#2563eb; font-size:.68rem; font-weight:700; }
+  .admin-review-actions form { margin:0; }
+  .admin-review-actions button { padding:6px 8px; border:0; border-radius:6px; font-size:.66rem; font-weight:800; }
+  .admin-review-approve { background:#dcfce7; color:#15803d; }
+  .admin-review-reject { background:#fee2e2; color:#b91c1c; }
+  .admin-empty { padding:28px 18px; color:#8793a5; text-align:center; font-size:.8rem; }
+  .admin-owner-requests { margin-top:16px; }
+  .admin-request-list { list-style:none; padding:0; margin:0; }
+  .admin-request-list li { display:flex; justify-content:space-between; gap:12px; padding:13px 17px; border-bottom:1px solid #edf0f5; font-size:.76rem; }
+  .admin-request-list li:last-child { border:0; }
+  .admin-request-list small { display:block; color:#8995a7; }
+  @@media(max-width:1200px) { .admin-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @@media(max-width:850px) { .admin-panels { grid-template-columns:1fr; } }
+  @@media(max-width:640px) { .admin-content { padding:18px 12px; } .admin-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } .admin-metric { padding:13px; min-height:108px; } .admin-page-heading { align-items:flex-start; flex-direction:column; } .admin-page-heading h1 { font-size:1.35rem; } .admin-panel-heading { padding:13px; } .admin-table th,.admin-table td { padding:10px; } }
+</style>
+}
+
+<main class="admin-dashboard">
+  <section class="admin-page-heading">
+    <div><span class="admin-kicker">@(isAdmin ? "ADMIN CONSOLE" : "OWNER WORKSPACE")</span><h1>Tổng quan</h1><p>@(isAdmin ? "Tình hình hoạt động và các nội dung cần quản trị." : "Theo dõi tin đăng và yêu cầu xem phòng của bạn.")</p></div>
+    <a class="admin-primary-link" href="/dang-tin"><span>＋</span> Đăng tin mới</a>
+  </section>
+
+  <section class="admin-metrics" aria-label="Thống kê tổng quan">
+    @if (isAdmin)
+    {
+      <article class="admin-metric"><span class="admin-metric-icon">♟</span><strong>@stats.TotalOwners</strong><span>Chủ trọ</span><small>Tài khoản chủ trọ</small></article>
+      <article class="admin-metric purple"><span class="admin-metric-icon">♙</span><strong>@stats.TotalTenants</strong><span>Người thuê</span><small>Tài khoản người thuê</small></article>
+      <article class="admin-metric teal"><span class="admin-metric-icon">⌂</span><strong>@stats.TotalRooms</strong><span>Tin đăng phòng</span><small>Tổng tài sản trên hệ thống</small></article>
+      <article class="admin-metric orange"><span class="admin-metric-icon">✉</span><strong>@stats.TotalMessages</strong><span>Tin nhắn liên hệ</span><small>@stats.UnhandledMessages chưa xử lý</small></article>
+      <article class="admin-metric red"><span class="admin-metric-icon">⚒</span><strong>@stats.PendingRooms</strong><span>Chờ duyệt</span><small>Cần xem xét</small></article>
+      <article class="admin-metric orange"><span class="admin-metric-icon">★</span><strong>@stats.TotalReviews</strong><span>Đánh giá</span><small>@stats.NewRequests yêu cầu xem phòng mới</small></article>
+    }
+    else
+    {
+      <article class="admin-metric"><span class="admin-metric-icon">⌂</span><strong>@stats.TotalRooms</strong><span>Tổng tin đăng</span><small>Tất cả bài đăng của bạn</small></article>
+      <article class="admin-metric teal"><span class="admin-metric-icon">◷</span><strong>@stats.ActiveRooms</strong><span>Đang hoạt động</span><small>Phòng đang hiển thị</small></article>
+      <article class="admin-metric orange"><span class="admin-metric-icon">⚒</span><strong>@stats.PendingRooms</strong><span>Chờ duyệt</span><small>Đang chờ xét duyệt</small></article>
+      <article class="admin-metric purple"><span class="admin-metric-icon">▤</span><strong>@stats.NewRequests</strong><span>Yêu cầu mới</span><small>Lịch xem chưa xử lý</small></article>
+    }
+  </section>
+
+  <section class="admin-panels">
+    <article class="admin-panel" id="rooms">
+      <header class="admin-panel-heading"><h2>@(isAdmin ? "Tin đăng gần đây" : "Tin đăng của bạn")</h2><a href="@(isAdmin ? "/quan-tri/dang-tin" : "/rooms")">Xem danh sách phòng →</a></header>
+      @if (recentRooms.Any())
+      {
+        <div class="admin-table-scroll"><table class="admin-table">
+          <thead><tr><th>TIN ĐĂNG</th><th>CHỦ TRỌ</th><th>GIÁ</th><th>TRẠNG THÁI</th></tr></thead>
+          <tbody>
+          @foreach (var room in recentRooms)
+          {
+            <tr>
+              <td><span class="admin-room-title">@room.Title</span><span class="admin-subtext">@room.District · @room.Area m²</span></td>
+              <td>@(isAdmin ? room.Owner?.FullName ?? "—" : "Bạn")</td>
+              <td>@String.Format(System.Globalization.CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0} đ", room.Price)</td>
+              <td><span class="admin-status @(room.Status == TroTot.Web.Models.RoomStatus.Approved ? "" : "pending")">@(room.Status == TroTot.Web.Models.RoomStatus.Approved ? "Đã duyệt" : room.Status == TroTot.Web.Models.RoomStatus.Pending ? "Chờ duyệt" : "Từ chối")</span></td>
+            </tr>
+          }
+          </tbody>
+        </table></div>
+      }
+      else { <div class="admin-empty">Chưa có tin đăng nào.</div> }
+    </article>
+
+    @if (isAdmin)
+    {
+      <article class="admin-panel">
+        <header class="admin-panel-heading"><h2>Tin đăng chờ duyệt</h2><span class="admin-status pending">@stats.PendingRooms đang chờ</span></header>
+        @if (pendingRooms.Any())
+        {
+          <ul class="admin-review-list">
+          @foreach (var room in pendingRooms)
+          {
+            <li>
+              <span><strong class="admin-room-title">@room.Title</strong><small class="admin-subtext">@(room.Owner?.FullName ?? "Chủ trọ") · @room.District</small></span>
+              <span class="admin-review-actions">
+                <form asp-controller="Home" asp-action="ApproveRoom" asp-route-id="@room.Id" method="post">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="admin-review-approve">Duyệt</button>
+                </form>
+                <form asp-controller="Home" asp-action="RejectRoom" asp-route-id="@room.Id" method="post">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="admin-review-reject">Từ chối</button>
+                </form>
+              </span>
+            </li>
+          }
+          </ul>
+        }
+        else { <div class="admin-empty">Không có tin đăng nào đang chờ duyệt.</div> }
+      </article>
+    }
+    else
+    {
+      <article class="admin-panel" id="requests">
+        <header class="admin-panel-heading"><h2>Yêu cầu xem phòng</h2><span class="admin-status pending">@stats.NewRequests mới</span></header>
+        @if (recentRequests.Any())
+        {
+          <ul class="admin-request-list">
+          @foreach (var request in recentRequests)
+          {
+            <li><span><strong>@request.Name</strong><small>@request.RoomName · @request.Date.ToString("dd/MM/yyyy") @request.Time</small></span><span>@request.Phone</span></li>
+          }
+          </ul>
+        }
+        else { <div class="admin-empty">Chưa có yêu cầu xem phòng.</div> }
+      </article>
+    }
+  </section>
+
+  @if (isAdmin)
+  {
+    <section class="admin-panel admin-owner-requests" id="requests">
+      <header class="admin-panel-heading"><h2>Yêu cầu xem phòng mới nhất</h2><span class="admin-status pending">@stats.NewRequests chưa xử lý</span></header>
+      @if (recentRequests.Any())
+      {
+        <ul class="admin-request-list">
+        @foreach (var request in recentRequests)
+        {
+          <li><span><strong>@request.Name</strong><small>@request.RoomName · @request.Date.ToString("dd/MM/yyyy") lúc @request.Time</small></span><span>@request.Phone</span></li>
+        }
+        </ul>
+      }
+      else { <div class="admin-empty">Chưa có yêu cầu đặt lịch xem phòng.</div> }
+    </section>
+  }
+</main>

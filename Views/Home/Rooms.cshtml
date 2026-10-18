@@ -1,0 +1,244 @@
+﻿@model List<TroTot.Web.Models.Room>
+@using System.Globalization
+@{
+    ViewData["Title"] = "Tìm Phòng Trọ – Lọc Nâng Cao | TroTot.vn";
+    ViewData["Description"] = "Tìm kiếm và lọc phòng trọ theo khu vực, giá, tiện nghi. Hàng nghìn phòng uy tín tại TP.HCM.";
+    ViewData["Icon"] = "🏠";
+    ViewData["Active"] = "rooms";
+    ViewData["PageClass"] = "rooms-listing-page";
+    ViewData["NavScrolled"] = false;
+    var keyword = (string?)ViewBag.Keyword ?? "";
+    var district = (string?)ViewBag.District ?? "";
+    var type = (string?)ViewBag.Type ?? "";
+    var amenities = (string[]?)ViewBag.Amenities ?? Array.Empty<string>();
+    var priceRange = (string?)ViewBag.PriceRange ?? "";
+    var districts = (IEnumerable<string>?)ViewBag.Districts ?? Array.Empty<string>();
+    var verifiedOnly = (bool?)ViewBag.VerifiedOnly == true;
+    var sort = (string?)ViewBag.Sort ?? "newest";
+    var priceLabels = new Dictionary<string, string>
+    {
+        ["under-3m"] = "Dưới 3 triệu",
+        ["3-5m"] = "3 đến dưới 5 triệu",
+        ["5-8m"] = "5 đến dưới 8 triệu",
+        ["over-8m"] = "Từ 8 triệu"
+    };
+}
+
+<section class="rooms-page-hero">
+  <div class="container">
+    <div class="rooms-page-header">
+      <h1 class="rooms-page-title">Tìm <span class="gradient-text">Phòng Trọ</span> Phù Hợp</h1>
+      <p class="rooms-page-sub">Lọc theo khu vực, giá, tiện nghi và thời gian phù hợp với nhu cầu của bạn</p>
+    </div>
+  </div>
+</section>
+
+<main class="rooms-main">
+  <div class="container">
+    <div class="rooms-layout">
+      <aside class="rooms-sidebar">
+        <form method="get" class="sidebar-card filter-form" asp-action="Rooms" asp-controller="Home">
+          <div class="sidebar-header">
+            <h3>🔍 Bộ Lọc Nâng Cao</h3>
+            <a class="clear-filter-btn" href="/rooms">Xóa tất cả</a>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-group-label">Từ khóa</label>
+            <input type="text" name="keyword" value="@keyword" placeholder="Tên phòng, địa chỉ..." class="filter-input" />
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-group-label">Khu vực / Quận</label>
+            <select name="district" class="filter-input" data-filter-field="district">
+              <option value="">Tất cả</option>
+              @foreach (var area in districts)
+              {
+                <option value="@area" selected="@(district == area ? "selected" : null)">@area</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-group-label" for="sidebar-price-range">Mức giá / tháng</label>
+            <select id="sidebar-price-range" name="priceRange" class="filter-input" data-filter-field="priceRange">
+              <option value="">Tất cả mức giá</option>
+              @foreach (var range in priceLabels)
+              {
+                <option value="@range.Key" selected="@(priceRange == range.Key ? "selected" : null)">@range.Value</option>
+              }
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-group-label">Loại phòng</label>
+            <select name="type" class="filter-input" data-filter-field="type">
+              <option value="">Tất cả loại phòng</option>
+              <option value="single" selected="@(type == "single" ? "selected" : null)">Phòng đơn</option>
+              <option value="shared" selected="@(type == "shared" ? "selected" : null)">Ở ghép</option>
+              <option value="mini" selected="@(type == "mini" ? "selected" : null)">Căn hộ mini</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-group-label">Tiện nghi</label>
+            <p class="filter-hint">Phòng cần có tất cả tiện nghi bạn chọn.</p>
+            <div class="filter-checks">
+              @foreach (var item in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng" })
+              {
+                <label class="filter-check">
+                  <input type="checkbox" name="amenity" value="@item" checked="@(amenities.Contains(item, StringComparer.OrdinalIgnoreCase) ? "checked" : null)" data-filter-amenity />
+                  <span class="fcheck-box"></span>@item
+                </label>
+              }
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-check verified-check">
+              <input type="checkbox" name="verified" value="true" checked="@(verifiedOnly ? "checked" : null)" />
+              <span class="fcheck-box"></span>
+              Chỉ hiển thị phòng đã xác minh
+            </label>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-group-label">Sắp xếp</label>
+            <select name="sort" class="filter-input" data-filter-field="sort">
+              <option value="newest" selected="@(sort == "newest" ? "selected" : null)">Mới nhất</option>
+              <option value="price-asc" selected="@(sort == "price-asc" ? "selected" : null)">Giá thấp → cao</option>
+              <option value="price-desc" selected="@(sort == "price-desc" ? "selected" : null)">Giá cao → thấp</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-primary w-full">Áp Dụng Bộ Lọc</button>
+        </form>
+      </aside>
+
+      <section class="rooms-results">
+        <div class="rooms-toolbar">
+          <div class="room-type-tabs" aria-label="Lọc theo loại phòng">
+            <button type="button" class="room-type-tab @(string.IsNullOrEmpty(type) ? "active" : "")" data-room-type="">Tất cả phòng</button>
+            <button type="button" class="room-type-tab @(type == "single" ? "active" : "")" data-room-type="single">Phòng đơn</button>
+            <button type="button" class="room-type-tab @(type == "shared" ? "active" : "")" data-room-type="shared">Ở ghép</button>
+            <button type="button" class="room-type-tab @(type == "mini" ? "active" : "")" data-room-type="mini">Căn hộ mini</button>
+          </div>
+          <div class="toolbar-right">
+            <span class="results-count">@Model.Count phòng phù hợp</span>
+            <select class="sort-select" data-quick-filter="sort" aria-label="Sắp xếp phòng">
+              <option value="newest" selected="@(sort == "newest" ? "selected" : null)">Mới nhất</option>
+              <option value="price-asc" selected="@(sort == "price-asc" ? "selected" : null)">Giá thấp → cao</option>
+              <option value="price-desc" selected="@(sort == "price-desc" ? "selected" : null)">Giá cao → thấp</option>
+            </select>
+            <a href="/dang-tin" class="btn-outline-primary rooms-create-link">Đăng tin</a>
+            <div class="room-view-switch" aria-label="Kiểu hiển thị">
+              <button type="button" class="room-view-button active" data-view-mode="grid" aria-label="Hiển thị dạng lưới" aria-pressed="true">▦</button>
+              <button type="button" class="room-view-button" data-view-mode="list" aria-label="Hiển thị dạng danh sách" aria-pressed="false">☰</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rooms-quick-filters" aria-label="Bộ lọc nhanh">
+          <label class="quick-filter">
+            <span>📍 Khu vực</span>
+            <select class="filter-input" data-quick-filter="district" aria-label="Lọc nhanh theo khu vực">
+              <option value="">Toàn bộ khu vực</option>
+              @foreach (var area in districts)
+              {
+                <option value="@area" selected="@(district == area ? "selected" : null)">@area</option>
+              }
+            </select>
+          </label>
+          <label class="quick-filter">
+            <span>💰 Khoảng giá</span>
+            <select class="filter-input" data-quick-filter="priceRange" aria-label="Lọc nhanh theo giá">
+              <option value="">Mọi mức giá</option>
+              @foreach (var range in priceLabels)
+              {
+                <option value="@range.Key" selected="@(priceRange == range.Key ? "selected" : null)">@range.Value</option>
+              }
+            </select>
+          </label>
+          <div class="quick-filter quick-amenities">
+            <span>✨ Tiện nghi</span>
+            <div class="quick-amenity-options">
+              @foreach (var item in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng" })
+              {
+                <label class="quick-amenity">
+                  <input type="checkbox" value="@item" data-quick-amenity checked="@(amenities.Contains(item, StringComparer.OrdinalIgnoreCase) ? "checked" : null)" />
+                  <span>@item</span>
+                </label>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(keyword) || !string.IsNullOrWhiteSpace(district) || !string.IsNullOrWhiteSpace(type) || !string.IsNullOrWhiteSpace(priceRange) || amenities.Length > 0 || verifiedOnly)
+        {
+          <div class="active-filters" aria-label="Bộ lọc đang áp dụng">
+            <span class="active-filter-title">Đang lọc:</span>
+            @if (!string.IsNullOrWhiteSpace(keyword)) { <span class="chip">Từ khóa: @keyword</span> }
+            @if (!string.IsNullOrWhiteSpace(district)) { <span class="chip">📍 @district</span> }
+            @if (!string.IsNullOrWhiteSpace(priceRange) && priceLabels.TryGetValue(priceRange, out var selectedPrice)) { <span class="chip">💰 @selectedPrice</span> }
+            @if (!string.IsNullOrWhiteSpace(type)) { <span class="chip">🏠 @(type == "single" ? "Phòng đơn" : type == "shared" ? "Ở ghép" : "Căn hộ mini")</span> }
+            @foreach (var item in amenities) { <span class="chip">✨ @item</span> }
+            @if (verifiedOnly) { <span class="chip">✓ Đã xác minh</span> }
+          </div>
+        }
+        @if (!Model.Any())
+        {
+          <div class="empty-state">
+            <h3>Không tìm thấy phòng nào phù hợp</h3>
+            <p>Hãy thử giảm bộ lọc hoặc đổi từ khóa khác để xem thêm gợi ý.</p>
+            <a href="/rooms" class="btn-primary">Đặt lại bộ lọc</a>
+          </div>
+        }
+        else
+        {
+          <div class="rooms-grid-list">
+            @foreach (var room in Model)
+            {
+                var image = room.Images.FirstOrDefault()?.Path ?? "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80";
+                var roomAmenities = room.Amenities.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(4).ToArray();
+                <article class="room-card list-view">
+                  <div class="room-thumb" style="background-image: url('@image');"></div>
+                  <div class="room-info">
+                    <div class="room-header">
+                      <div>
+                        <div class="room-badges-row">
+                          <span class="room-tag">@(room.IsVerified ? "✓ Đã xác minh" : "Hot")</span>
+                          <span class="room-tag muted">@((room.RoomType == "single") ? "Phòng đơn" : (room.RoomType == "shared") ? "Ở ghép" : "Căn hộ mini")</span>
+                        </div>
+                        <h3 class="room-title"><a href="/phong/@room.Id">@room.Title</a></h3>
+                      </div>
+                      <span class="room-price">@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", room.Price)</span>
+                    </div>
+
+                    <div class="room-meta">
+                      <span>📍 @room.District</span>
+                      <span>📐 @room.Area m²</span>
+                      <span>🧭 @room.Address</span>
+                    </div>
+
+                    <p class="room-description">@room.Description</p>
+
+                    <div class="feature-list">
+                      @foreach (var item in roomAmenities)
+                      {
+                        <span>@item</span>
+                      }
+                    </div>
+
+                    <div class="room-actions">
+                      <a href="/phong/@room.Id" class="btn-primary">Xem chi tiết</a>
+                      <a href="/phong/@room.Id#booking" class="btn-outline-primary">Đặt lịch</a>
+                    </div>
+                  </div>
+                </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</main>

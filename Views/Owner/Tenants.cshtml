@@ -1,0 +1,26 @@
+@model List<TroTot.Web.Models.AppUser>
+@{
+    ViewData["Title"] = "Người thuê";
+    ViewData["Active"] = "tenants";
+    ViewData["DashboardLayout"] = true;
+}
+<main class="admin-management">
+  <header class="admin-management-heading"><div><span class="admin-kicker">QUẢN LÝ CƯ DÂN</span><h1>Người thuê</h1><p>Người thuê đã có hợp đồng với bạn.</p></div></header>
+  <section class="admin-data-card">
+    <div class="admin-management-card-title"><h2>Danh sách người thuê</h2><span>@Model.Count người</span></div>
+    @if (Model.Count == 0)
+    {
+      <div class="admin-empty">Chưa có người thuê nào được liên kết qua hợp đồng. Tạo hợp đồng để quản lý người thuê tại đây.</div>
+    }
+    else
+    {
+      <div class="admin-table-scroll"><table class="admin-table admin-management-table">
+        <thead><tr><th>HỌ TÊN</th><th>EMAIL</th><th>ĐIỆN THOẠI</th><th>TRẠNG THÁI</th></tr></thead>
+        <tbody>@foreach (var tenant in Model)
+        {
+          <tr><td><strong class="admin-room-title">@tenant.FullName</strong></td><td>@tenant.Email</td><td><a href="tel:@tenant.Phone">@tenant.Phone</a></td><td><span class="admin-status">@(tenant.IsActive ? "Đang hoạt động" : "Đã khóa")</span></td></tr>
+        }</tbody>
+      </table></div>
+    }
+  </section>
+</main>
