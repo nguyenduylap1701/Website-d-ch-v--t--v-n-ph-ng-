@@ -116,12 +116,15 @@ public class ApiController : ControllerBase
         };
 
         var rooms = await query
-            .Take(Math.Clamp(limit ?? 6, 1, 50))
+            .Take(Math.Clamp(limit ?? 30, 1, 100))
             .Select(r => new
             {
                 id = r.Id,
                 title = r.Title,
+                address = r.Address,
                 district = r.District,
+                latitude = r.Latitude,
+                longitude = r.Longitude,
                 price = r.Price,
                 area = r.Area,
                 type = r.RoomType,
@@ -140,6 +143,27 @@ public class ApiController : ControllerBase
             .ToListAsync();
 
         return new JsonResult(rooms);
+    }
+
+    [HttpGet("landmarks")]
+    public IActionResult GetLandmarks()
+    {
+        var landmarks = new[]
+        {
+            new { id = "hou", name = "Đại học Mở Hà Nội (FIT HOU)", address = "96 Định Công, Hoàng Mai", lat = 20.9856, lng = 105.8344 },
+            new { id = "hust", name = "Đại học Bách Khoa Hà Nội", address = "Số 1 Đại Cồ Việt, Hai Bà Trưng", lat = 21.0049, lng = 105.8458 },
+            new { id = "neu", name = "Đại học Kinh Tế Quốc Dân", address = "207 Giải Phóng, Hai Bà Trưng", lat = 21.0006, lng = 105.8427 },
+            new { id = "vnu", name = "Đại học Quốc Gia Hà Nội", address = "144 Xuân Thủy, Cầu Giấy", lat = 21.0378, lng = 105.7818 },
+            new { id = "hnue", name = "Đại học Sư Phạm Hà Nội", address = "136 Xuân Thủy, Cầu Giấy", lat = 21.0366, lng = 105.7828 },
+            new { id = "tmu", name = "Đại học Thương Mại", address = "79 Hồ Tùng Mậu, Cầu Giấy", lat = 21.0365, lng = 105.7744 },
+            new { id = "utc", name = "Đại học Giao Thông Vận Tải", address = "3 Cầu Giấy, Láng Thượng, Đống Đa", lat = 21.0286, lng = 105.8028 },
+            new { id = "ptit", name = "Học viện Bưu chính Viễn thông", address = "Km10 Đường Nguyễn Trãi, Hà Đông", lat = 20.9806, lng = 105.7877 },
+            new { id = "hanu", name = "Đại học Hà Nội", address = "Km9 Nguyễn Trãi, Nam Từ Liêm", lat = 20.9912, lng = 105.7958 },
+            new { id = "hau", name = "Đại học Kiến Trúc Hà Nội", address = "Km10 Nguyễn Trãi, Thanh Xuân", lat = 20.9831, lng = 105.7892 },
+            new { id = "hmu", name = "Đại học Y Hà Nội", address = "1 Tôn Thất Tùng, Đống Đa", lat = 21.0028, lng = 105.8306 },
+            new { id = "tlu", name = "Đại học Thủy Lợi", address = "175 Tây Sơn, Đống Đa", lat = 21.0075, lng = 105.8239 }
+        };
+        return new JsonResult(landmarks);
     }
 
     [HttpGet("rooms/{id:int}")]

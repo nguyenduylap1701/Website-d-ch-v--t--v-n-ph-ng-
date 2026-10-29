@@ -60,6 +60,12 @@ await using (var scope = app.Services.CreateAsyncScope())
         IF COL_LENGTH(N'dbo.ViewingRequests', N'RoomId') IS NULL
             ALTER TABLE dbo.ViewingRequests ADD RoomId int NULL;
 
+        IF COL_LENGTH(N'dbo.Rooms', N'Latitude') IS NULL
+            ALTER TABLE dbo.Rooms ADD Latitude float NULL;
+
+        IF COL_LENGTH(N'dbo.Rooms', N'Longitude') IS NULL
+            ALTER TABLE dbo.Rooms ADD Longitude float NULL;
+
         IF NOT EXISTS (
             SELECT 1
             FROM sys.foreign_key_columns AS fkColumn
@@ -358,26 +364,47 @@ await using (var scope = app.Services.CreateAsyncScope())
         db.Rooms.RemoveRange(duplicateCauGiayRooms.Skip(1));
     }
 
-    var seededRoomLocations = new Dictionary<string, (string Address, string District)>
+    var seededRoomLocations = new Dictionary<string, (string Address, string District, double Lat, double Lng)>
     {
-        ["Phòng Cao Cấp Gần Trường Đại Học"] = ("Đường Quang Trung, Phường Hà Cầu", "Hà Đông"),
-        ["Phòng Khép Kín, An Ninh Tốt"] = ("Đường Quang Trung, Phường Hà Cầu", "Hà Đông"),
-        ["Studio Đầy Đủ Nội Thất Gần Công Viên"] = ("Phố Đội Cấn, Phường Ngọc Hà", "Ba Đình"),
-        ["Phòng Trọ Có Gác Gần Chợ"] = ("Phố Thái Hà, Phường Trung Liệt", "Đống Đa"),
-        ["Căn Hộ Mini Yên Tĩnh Tại Cầu Giấy"] = ("Phố Cầu Giấy, Phường Quan Hoa", "Cầu Giấy"),
-        ["Phòng Ở Ghép Tiện Nghi Hoàng Mai"] = ("Đường Giải Phóng, Phường Hoàng Liệt", "Hoàng Mai"),
-        ["Phòng Trọ Thoáng Mát Gần Đại Học"] = ("Đường Xuân Đỉnh, Phường Xuân Đỉnh", "Bắc Từ Liêm")
+        ["Phòng Studio Mới Xây, View Đẹp"] = ("Số 24, ngõ 18, Phố Hoàng Quốc Việt", "Cầu Giấy", 21.0455, 105.7925),
+        ["Phòng Ở Ghép Sinh Viên, Giá Rẻ"] = ("78 Trần Duy Hưng, P. Trung Hoà", "Đống Đa", 21.0094, 105.8018),
+        ["Căn Hộ Mini Nội Thất 2PN"] = ("128 Lê Văn Lương, P. Nhân Chính", "Nam Từ Liêm", 21.0038, 105.8068),
+        ["Phòng Cao Cấp Gần Trường Đại Học"] = ("Đường Quang Trung, Phường Hà Cầu", "Hà Đông", 20.9712, 105.7728),
+        ["Phòng Khép Kín, An Ninh Tốt"] = ("Đường Quang Trung, Phường Hà Cầu", "Hà Đông", 20.9750, 105.7800),
+        ["Studio Đầy Đủ Nội Thất Gần Công Viên"] = ("Phố Đội Cấn, Phường Ngọc Hà", "Ba Đình", 21.0372, 105.8245),
+        ["Phòng Trọ Có Gác Gần Chợ"] = ("Phố Thái Hà, Phường Trung Liệt", "Đống Đa", 21.0135, 105.8206),
+        ["Căn Hộ Mini Yên Tĩnh Tại Cầu Giấy"] = ("Phố Cầu Giấy, Phường Quan Hoa", "Cầu Giấy", 21.0336, 105.7972),
+        ["Phòng Ở Ghép Tiện Nghi Hoàng Mai"] = ("Đường Giải Phóng, Phường Hoàng Liệt", "Hoàng Mai", 20.9723, 105.8427),
+        ["Phòng Trọ Thoáng Mát Gần Đại Học"] = ("Đường Xuân Đỉnh, Phường Xuân Đỉnh", "Bắc Từ Liêm", 21.0667, 105.7833)
     };
-    var seededRooms = await db.Rooms
-        .Where(room => seededRoomLocations.Keys.Contains(room.Title))
-        .ToListAsync();
-    foreach (var room in seededRooms)
+    var allRooms = await db.Rooms.ToListAsync();
+    foreach (var room in allRooms)
     {
-        var location = seededRoomLocations[room.Title];
-        room.Address = location.Address;
-        room.District = location.District;
+        if (seededRoomLocations.TryGetValue(room.Title, out var loc))
+        {
+            room.Address = loc.Address;
+            room.District = loc.District;
+            room.Latitude = loc.Lat;
+            room.Longitude = loc.Lng;
+        }
+        else if (room.Latitude == null || room.Longitude == null)
+        {
+            // Tọa độ mặc định tại trung tâm quận tương ứng tại Hà Nội
+            (room.Latitude, room.Longitude) = room.District switch
+            {
+                "Cầu Giấy" => (21.0336, 105.7972),
+                "Đống Đa" => (21.0180, 105.8250),
+                "Ba Đình" => (21.0340, 105.8250),
+                "Hà Đông" => (20.9720, 105.7750),
+                "Nam Từ Liêm" => (21.0120, 105.7650),
+                "Bắc Từ Liêm" => (21.0600, 105.7600),
+                "Hoàng Mai" => (20.9750, 105.8450),
+                "Hai Bà Trưng" => (21.0080, 105.8550),
+                "Thanh Xuân" => (20.9950, 105.8050),
+                _ => (21.0285, 105.8542)
+            };
+        }
     }
-
     await db.SaveChangesAsync();
 
     if (app.Environment.IsDevelopment())

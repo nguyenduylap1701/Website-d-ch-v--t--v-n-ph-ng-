@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj": {}
+    "D:\\dotnet\\Website-d-ch-v--t--v-n-ph-ng-\\TroTot.Web.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj": {
+    "D:\\dotnet\\Website-d-ch-v--t--v-n-ph-ng-\\TroTot.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj",
+        "projectUniqueName": "D:\\dotnet\\Website-d-ch-v--t--v-n-ph-ng-\\TroTot.Web.csproj",
         "projectName": "TroTot.Web",
-        "projectPath": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj",
-        "packagesPath": "C:\\Users\\Dell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\obj\\",
+        "projectPath": "D:\\dotnet\\Website-d-ch-v--t--v-n-ph-ng-\\TroTot.Web.csproj",
+        "packagesPath": "C:\\Users\\anhdi\\.nuget\\packages\\",
+        "outputPath": "D:\\dotnet\\Website-d-ch-v--t--v-n-ph-ng-\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Dell\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\anhdi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -39,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -69,7 +74,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.424/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

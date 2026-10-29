@@ -1,4 +1,4 @@
-@model TroTot.Web.Models.Room
+﻿@model TroTot.Web.Models.Room
 @using System.Globalization
 @{
     ViewData["Title"] = Model.Title + " | TroTot.vn";
@@ -90,6 +90,45 @@
                 <li>Giữ đồng phục và nhắc nhở các quy định nội khu.</li>
             }
           </ul>
+        </div>
+
+        <div class="detail-card">
+          <h2>🗺️ Vị trí & Khoảng cách đến các trường Đại học</h2>
+          <p class="text-muted" style="margin-bottom: 14px; font-size: 0.95rem;">
+            📍 Địa chỉ chính xác: <strong>@Model.Address, @Model.District</strong>
+          </p>
+          @{
+            var queryAddress = System.Net.WebUtility.UrlEncode($"{Model.Address}, {Model.District}, Hà Nội");
+          }
+          <!-- Bản đồ nhúng Google Maps iframe siêu đơn giản, không cần API Key, không lo bị chặn -->
+          <iframe
+            src="https://maps.google.com/maps?q=@queryAddress&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+            width="100%" height="380"
+            style="border:1px solid #e2e8f0; border-radius:12px; margin-bottom: 8px;"
+            loading="lazy"
+            title="Vị trí phòng: @Model.Title">
+          </iframe>
+          <div style="text-align:right; font-size:0.85rem; margin-bottom:16px;">
+            <a href="https://maps.google.com/maps?q=@queryAddress" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none;">
+              📍 Mở trên Google Maps ↗
+            </a>
+          </div>
+
+          <div class="nearby-unis-card">
+            <h3 style="font-size: 1rem; margin-bottom: 8px;">🎓 Khoảng cách đến các trường Đại học lân cận (ước tính thực tế):</h3>
+            <table class="nearby-unis-table">
+              <thead>
+                <tr>
+                  <th>Trường Đại học</th>
+                  <th>Khoảng cách</th>
+                  <th>Thời gian đi xe máy</th>
+                </tr>
+              </thead>
+              <tbody id="nearbyUniversitiesBody">
+                <tr><td colspan="3" class="text-muted">Đang tải và tính toán khoảng cách...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
