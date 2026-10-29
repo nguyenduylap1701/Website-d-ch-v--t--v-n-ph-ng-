@@ -9,127 +9,147 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = TroTot.Web
 build_property.RootNamespace = TroTot.Web
-build_property.ProjectDir = C:\Users\Dell\Downloads\TroTot.Web-update\TroTot.Web\
+build_property.ProjectDir = D:\BTL WNC G.04\TroTot.Web-update\TroTot.Web\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\Dell\Downloads\TroTot.Web-update\TroTot.Web
+build_property.MSBuildProjectDirectory = D:\BTL WNC G.04\TroTot.Web-update\TroTot.Web
 build_property._RazorSourceGeneratorDebug = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Account/DangKy.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Account/DangKy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxEYW5nS3kuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Account/DangNhap.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Account/DangNhap.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxEYW5nTmhhcC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Admin/Listings.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Admin/ListingDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTGlzdGluZ0RldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Admin/Listings.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTGlzdGluZ3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Admin/Messages.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Admin/Messages.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cTWVzc2FnZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Admin/Reviews.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Admin/Reviews.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cUmV2aWV3cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Admin/Users.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Admin/Users.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVXNlcnMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/Blog.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/Blog.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxCbG9nLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/DangTin.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/DangTin.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxEYW5nVGluLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/Index.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/LienHe.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/LienHe.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxMaWVuSGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/QuanLy.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/QuanLy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxRdWFuTHkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/RoomDetail.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/RoomDetail.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxSb29tRGV0YWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/Rooms.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/Rooms.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxSb29tcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Home/TuVan.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Home/TuVan.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxUdVZhbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Bills.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Bills.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcQmlsbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/ChangePassword.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/ChangePassword.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcQ2hhbmdlUGFzc3dvcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Contracts.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Contracts.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcQ29udHJhY3RzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Messages.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/EditRoom.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcRWRpdFJvb20uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Messages.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcTWVzc2FnZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Profile.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcUHJvZmlsZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Repairs.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Repairs.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcUmVwYWlycy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Reports.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Reports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcUmVwb3J0cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Rooms.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Rooms.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcUm9vbXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Owner/Tenants.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Owner/Tenants.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcT3duZXJcVGVuYW50cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Shared/_Alerts.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Payment/Receipt.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5bWVudFxSZWNlaXB0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Payment/Result.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGF5bWVudFxSZXN1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Shared/Components/NotificationBell/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXENvbXBvbmVudHNcTm90aWZpY2F0aW9uQmVsbFxEZWZhdWx0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Shared/_Alerts.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BbGVydHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Shared/_AuthLayout.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Shared/_AuthLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BdXRoTGF5b3V0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Shared/_Layout.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/Shared/_ValidationBox.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/Shared/_ValidationBox.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uQm94LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/_ViewImports.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Dell/Downloads/TroTot.Web-update/TroTot.Web/Views/_ViewStart.cshtml]
+[D:/BTL WNC G.04/TroTot.Web-update/TroTot.Web/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

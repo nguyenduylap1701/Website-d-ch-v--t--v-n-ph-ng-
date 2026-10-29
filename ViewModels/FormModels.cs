@@ -96,7 +96,7 @@ public class QuestionForm
     public string Content { get; set; } = "";
 }
 
-public class RoomForm
+public class RoomListingForm
 {
     [Required(ErrorMessage = "Vui lòng nhập tiêu đề tin đăng."), StringLength(200)]
     public string Title { get; set; } = "";
@@ -129,6 +129,42 @@ public class RoomForm
     public List<string>? Amenities { get; set; }
     public string Package { get; set; } = "free";
     public List<IFormFile>? Images { get; set; }
+}
+
+public class RoomForm : RoomListingForm
+{
+
+    [Required(ErrorMessage = "Vui lòng tải ảnh CCCD mặt trước.")]
+    public IFormFile? IdentityFront { get; set; }
+
+    [Required(ErrorMessage = "Vui lòng tải ảnh CCCD mặt sau.")]
+    public IFormFile? IdentityBack { get; set; }
+
+    [Required(ErrorMessage = "Vui lòng tải sổ đỏ hoặc hợp đồng thuê lại.")]
+    public IFormFile? PropertyDocument { get; set; }
+
+    [Required(ErrorMessage = "Vui lòng tải giấy tờ liên quan đến phòng thuê.")]
+    public IFormFile? RoomLegalDocument { get; set; }
+
+    [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn cần xác nhận thông tin và giấy tờ là chính xác.")]
+    public bool LegalDeclaration { get; set; }
+}
+
+public class EditRoomForm : RoomListingForm
+{
+    public List<int> RemoveImageIds { get; set; } = new();
+    public List<RoomImage> ViewRoomImages { get; set; } = new();
+    public bool HasIdentityFront { get; set; }
+    public bool HasIdentityBack { get; set; }
+    public bool HasPropertyDocument { get; set; }
+    public bool HasRoomLegalDocument { get; set; }
+    public IFormFile? IdentityFront { get; set; }
+    public IFormFile? IdentityBack { get; set; }
+    public IFormFile? PropertyDocument { get; set; }
+    public IFormFile? RoomLegalDocument { get; set; }
+
+    [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn cần xác nhận thông tin cập nhật là chính xác.")]
+    public bool ConfirmAccuracy { get; set; }
 }
 
 public class TuVanPageViewModel

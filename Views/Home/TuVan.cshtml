@@ -8,6 +8,7 @@
 }
 
 @section Styles {
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
     .tuvan-hero {
       background: linear-gradient(180deg, #090d1a 0%, #0f172a 100%);
@@ -92,6 +93,27 @@
       line-height: 1.6;
       padding-left: 26px;
     }
+    .advisor-step { display: grid; gap: 18px; }
+    .advisor-step[hidden] { display: none; }
+    .advisor-progress { display: flex; gap: 8px; margin: 20px 0; }
+    .advisor-progress span { flex: 1; height: 5px; border-radius: 99px; background: #334155; }
+    .advisor-progress span.active { background: #ff8c42; }
+    .advisor-field { display: grid; gap: 7px; }
+    .advisor-field label, .advisor-field legend { color: #e2e8f0; font-size: 13px; font-weight: 700; }
+    .advisor-field input[type="text"], .advisor-field select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #334155; border-radius: 10px; color: #f8fafc; background: #0f172a; }
+    .advisor-field input[type="range"] { width: 100%; accent-color: #ff8c42; }
+    .advisor-two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .advisor-value { color: #ffb47d; font-weight: 800; }
+    .advisor-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding: 0; border: 0; }
+    .advisor-options legend { grid-column: 1 / -1; margin-bottom: 4px; }
+    .advisor-option { display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #334155; border-radius: 10px; color: #cbd5e1; font-size: 12px; cursor: pointer; }
+    .advisor-option input { accent-color: #ff8c42; }
+    .advisor-actions { display: flex; gap: 10px; }
+    .advisor-actions button { flex: 1; }
+    .advisor-status { min-height: 22px; color: #ffb47d; }
+    @@media (max-width: 620px) {
+      .advisor-two-col { grid-template-columns: 1fr; }
+    }
   </style>
 }
 
@@ -102,13 +124,13 @@
 <section class="tuvan-hero">
   <div class="container">
     <div class="hero-badge" style="margin-bottom:12px;">
-      <span class="badge-dot"></span> Đội ngũ chuyên viên tư vấn 24/7
+      <span class="badge-dot"></span> Trợ lý tìm phòng tức thì
     </div>
     <h1 style="font-size:38px;font-weight:900;color:white;margin-bottom:14px;line-height:1.3;">
-      Dịch Vụ Tư Vấn Tìm Trọ <br /><span class="gradient-text">Hoàn Toàn Miễn Phí</span>
+    Trợ Lý Tìm Trọ <br /><span class="gradient-text">Thông Minh &amp; Miễn Phí</span>
     </h1>
     <p style="color:#94a3b8;max-width:620px;margin:0 auto;font-size:16px;">
-      Bạn bận rộn hoặc chưa thông thạo khu vực? Hãy để lại nhu cầu, chuyên viên TroTot.vn sẽ sàng lọc phòng tốt nhất và gửi danh sách chi tiết qua Zalo cho bạn trong 30 phút!
+    Chọn nơi học/làm, ngân sách và tiện ích. Hệ thống sẽ lọc phòng phù hợp, ước tính khoảng cách và giải thích cách chấm điểm.
     </p>
 
     <!-- Content Grid -->
@@ -116,108 +138,71 @@
 
       <!-- Form tư vấn -->
       <div class="consult-card" style="text-align:left;">
-        <h2 style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
-          <span>📋</span> Điền Nhu Cầu Tìm Phòng Của Bạn
-        </h2>
-        <p style="font-size:13px;color:#94a3b8;margin-bottom:24px;">
-          Cam kết bảo mật thông tin 100% • Không thu bất kỳ khoản phí nào từ người thuê.
-        </p>
+        <h2 style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:8px;">🧭 Tìm phòng theo nhu cầu</h2>
+        <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Không cần đăng nhập. Địa điểm được gửi tới OpenStreetMap để tìm tọa độ; vui lòng không nhập thông tin nhạy cảm.</p>
+        <div class="advisor-progress" aria-label="Tiến trình tư vấn"><span class="active" data-advisor-progress="1"></span><span data-advisor-progress="2"></span><span data-advisor-progress="3"></span></div>
 
-        <form id="consultForm" asp-controller="Home" asp-action="TuVan" method="post">
-          <input type="hidden" name="returnUrl" value="/tu-van" />
-          <div class="form-row">
-            <div class="form-field">
-              <label>Họ và tên bạn *</label>
-              <input type="text" id="csName" name="Name" class="form-input" placeholder="Nguyễn Văn A" required />
+        <form id="advisor-form" data-ajax-ignore>
+          @Html.AntiForgeryToken()
+          <section class="advisor-step" id="advisor-step-1">
+            <div class="advisor-field">
+              <label for="advisor-place">Trường học hoặc nơi làm việc</label>
+              <input id="advisor-place" type="text" maxlength="180" required placeholder="VD: Đại học Bách Khoa Hà Nội" autocomplete="street-address" />
             </div>
-            <div class="form-field">
-              <label>Số điện thoại (Zalo) *</label>
-              <input type="tel" id="csPhone" name="Phone" class="form-input" placeholder="0901234567" required />
+            <div class="advisor-two-col">
+              <div class="advisor-field">
+                <label for="advisor-radius">Bán kính mong muốn: <span class="advisor-value" id="advisor-radius-value">5 km</span></label>
+                <input id="advisor-radius" type="range" min="1" max="15" value="5" />
+              </div>
+              <div class="advisor-field">
+                <label for="advisor-transport">Phương tiện di chuyển</label>
+                <select id="advisor-transport">
+                  <option value="motorbike">Xe máy</option>
+                  <option value="bicycle">Xe đạp điện</option>
+                  <option value="bus">Xe buýt</option>
+                </select>
+              </div>
             </div>
-          </div>
+            <button type="button" class="btn-primary" data-advisor-next="2">Tiếp tục chọn ngân sách →</button>
+          </section>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label>Khu vực mong muốn (Quận) *</label>
-              <select id="csDistrict" name="District" class="form-input form-select" required>
-                <option value="">-- Chọn Quận/Khu vực --</option>
-                <option value="cau-giay">Cầu Giấy (Gần ĐHQG, Sư Phạm, Báo Chí)</option>
-                <option value="dong-da">Đống Đa (Gần ĐH Ngoại Thương, Luật, Ngoại Giao)</option>
-                <option value="thanh-xuan">Thanh Xuân (Gần Nhân Văn, KHTN, ĐH Hà Nội)</option>
-                <option value="hai-ba-trung">Hai Bà Trưng (Gần Bách Khoa, Kinh Tế, Xây Dựng)</option>
-                <option value="nam-tu-liem">Nam Từ Liêm (Mỹ Đình, Mễ Trì, ĐH Thương Mại)</option>
-                <option value="ha-dong">Hà Đông (Gần PTIT, Kiến Trúc, Học viện An Ninh)</option>
-                <option value="bac-tu-liem">Bắc Từ Liêm (ĐH Công Nghiệp, HV Tài Chính)</option>
-                <option value="ba-dinh">Ba Đình (Trung tâm, ĐH RMIT HN)</option>
-                <option value="hoang-mai">Hoàng Mai (Định Công, Giải Phóng, Giáp Bát)</option>
-                <option value="tay-ho">Tây Hồ (Ven Hồ Tây, căn hộ cao cấp)</option>
-              </select>
+          <section class="advisor-step" id="advisor-step-2" hidden>
+            <div class="advisor-two-col">
+              <div class="advisor-field">
+                <label for="advisor-min-rent">Giá thuê tối thiểu: <span class="advisor-value" id="advisor-min-value"></span></label>
+                <input id="advisor-min-rent" type="range" min="500000" max="10000000" step="250000" value="1000000" />
+              </div>
+              <div class="advisor-field">
+                <label for="advisor-max-rent">Giá thuê tối đa: <span class="advisor-value" id="advisor-max-value"></span></label>
+                <input id="advisor-max-rent" type="range" min="1000000" max="15000000" step="250000" value="6000000" />
+              </div>
             </div>
-            <div class="form-field">
-              <label>Ngân sách tối đa hàng tháng *</label>
-              <select id="csBudget" name="Budget" class="form-input form-select" required>
-                <option value="2000000">Dưới 2.000.000 đ/tháng</option>
-                <option value="3500000" selected>Từ 2.000.000 – 3.500.000 đ</option>
-                <option value="5000000">Từ 3.500.000 – 5.000.000 đ</option>
-                <option value="8000000">Từ 5.000.000 – 8.000.000 đ (Studio/Mini)</option>
-                <option value="99000000">Trên 8.000.000 đ (Căn hộ dịch vụ)</option>
-              </select>
+            <p class="advisor-note">Ước tính điện/nước dựa trên mức sử dụng mỗi tháng; kết quả dùng đơn giá điện/nước của từng tin phòng.</p>
+            <div class="advisor-two-col">
+              <div class="advisor-field">
+                <label for="advisor-electricity">Điện dự kiến: <span class="advisor-value" id="advisor-electricity-value">70 kWh/tháng</span></label>
+                <input id="advisor-electricity" type="range" min="0" max="200" step="10" value="70" />
+              </div>
+              <div class="advisor-field">
+                <label for="advisor-water">Số người ở: <span class="advisor-value" id="advisor-water-value">1 người</span></label>
+                <input id="advisor-water" type="range" min="1" max="6" step="1" value="1" />
+              </div>
             </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-field">
-              <label>Loại hình phòng muốn tìm</label>
-              <select id="csType" name="RoomType" class="form-input form-select">
-                <option value="single">Phòng đơn riêng biệt</option>
-                <option value="shared">Ở ghép / Tìm bạn cùng phòng</option>
-                <option value="mini">Căn hộ mini / Studio full nội thất</option>
-                <option value="any">Loại nào cũng được</option>
-              </select>
+            <fieldset class="advisor-options">
+              <legend>Tiện ích ưu tiên</legend>
+              <label class="advisor-option"><input type="checkbox" value="Máy lạnh" /> Có điều hòa</label>
+              <label class="advisor-option"><input type="checkbox" value="Máy giặt" /> Máy giặt</label>
+              <label class="advisor-option"><input type="checkbox" value="Giờ giấc tự do" /> Giờ giấc tự do</label>
+              <label class="advisor-option"><input type="checkbox" value="Không chung chủ" /> Không chung chủ</label>
+            </fieldset>
+            <div class="advisor-actions">
+              <button type="button" class="btn-ghost" data-advisor-next="1">← Quay lại</button>
+              <button type="submit" class="btn-primary" id="advisor-submit">🔎 Phân Tích &amp; Tư Vấn Ngay</button>
             </div>
-            <div class="form-field">
-              <label>Thời gian dự kiến chuyển vào</label>
-              <select id="csTime" name="MoveInTime" class="form-input form-select">
-                <option value="now">Vào ở ngay trong tuần này</option>
-                <option value="2weeks">Trong vòng 2 tuần tới</option>
-                <option value="nextmonth">Đầu tháng sau</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label>Tiện nghi bắt buộc cần có:</label>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:8px;margin-top:6px;">
-              <label class="filter-check" style="font-size:12.5px;">
-                <input type="checkbox" name="Amenities" value="Máy lạnh" /> <span>Máy lạnh</span>
-              </label>
-              <label class="filter-check" style="font-size:12.5px;">
-                <input type="checkbox" name="Amenities" value="Gác lửng" /> <span>Gác lửng</span>
-              </label>
-              <label class="filter-check" style="font-size:12.5px;">
-                <input type="checkbox" name="Amenities" value="Chỗ để xe" checked /> <span>Chỗ để xe</span>
-              </label>
-              <label class="filter-check" style="font-size:12.5px;">
-                <input type="checkbox" name="Amenities" value="Giờ giấc tự do" checked /> <span>Giờ tự do</span>
-              </label>
-              <label class="filter-check" style="font-size:12.5px;">
-                <input type="checkbox" name="Amenities" value="Nuôi thú cưng" /> <span>Nuôi thú cưng</span>
-              </label>
-              <label class="filter-check" style="font-size:12.5px;">
-                <input type="checkbox" name="Amenities" value="Máy giặt" /> <span>Máy giặt</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-field" style="margin-top:12px;">
-            <label>Địa điểm học tập / làm việc cụ thể</label>
-            <input type="text" id="csWorkplace" name="Workplace" class="form-input" placeholder="Ví dụ: Đại học Quốc Gia Hà Nội, ĐH Bách Khoa, Tòa nhà Keangnam..." />
-          </div>
-
-          <button type="submit" class="btn-primary" style="width:100%;padding:14px;font-size:16px;font-weight:700;margin-top:12px;">
-            🚀 Gửi Yêu Cầu Tư Vấn Ngay
-          </button>
+          </section>
         </form>
+
+        <p id="advisor-status" class="advisor-status" role="status" aria-live="polite"></p>
       </div>
 
       <!-- Lợi ích khi nhờ tư vấn -->
@@ -230,32 +215,32 @@
           <div class="benefit-item">
             <div class="benefit-icon">🎯</div>
             <div>
-              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Đúng Nhu Cầu 100%</div>
-              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Không gửi tin rác, chỉ đề xuất các phòng đã kiểm định thực tế sát với ngân sách và địa điểm của bạn.</div>
+              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Lọc theo nhu cầu</div>
+              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">So sánh ngân sách, tiện ích đã khai báo và vị trí phòng với địa điểm bạn chọn.</div>
             </div>
           </div>
 
           <div class="benefit-item">
             <div class="benefit-icon">⚡</div>
             <div>
-              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Phản Hồi Siêu Tốc (30 Phút)</div>
-              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Chuyên viên kết nối Zalo, gửi video thực tế và bảng chi phí dự toán chi tiết.</div>
+              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Ước tính chi phí hàng tháng</div>
+              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Dự toán tiền điện theo mức sử dụng và đơn giá trong tin; tiền nước theo số người ở.</div>
             </div>
           </div>
 
           <div class="benefit-item">
             <div class="benefit-icon">🛡️</div>
             <div>
-              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Hỗ Trợ Kiểm Tra Pháp Lý</div>
-              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Đồng hành cùng bạn đọc kỹ hợp đồng thuê nhà, tránh rủi ro mất cọc oan.</div>
+              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Điểm gợi ý minh bạch</div>
+              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Điểm được tính từ giá, tiện ích và trạng thái xác minh; không thay thế việc xem phòng trực tiếp.</div>
             </div>
           </div>
 
           <div class="benefit-item" style="margin-bottom:0;">
             <div class="benefit-icon">🎁</div>
             <div>
-              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Miễn Phí Dẫn Xem Phòng</div>
-              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Hỗ trợ đặt lịch, hướng dẫn kiểm tra trang thiết bị và đàm phán giá tốt nhất.</div>
+              <div style="font-weight:700;color:#f1f5f9;font-size:15px;margin-bottom:3px;">Bạn quyết định chia sẻ thông tin</div>
+              <div style="font-size:13px;color:#94a3b8;line-height:1.5;">Chỉ khi gửi yêu cầu liên hệ, thông tin tên và số điện thoại mới được lưu để chuyên viên hỗ trợ.</div>
             </div>
           </div>
         </div>
@@ -275,77 +260,9 @@
   </div>
 </section>
 
-<!-- ===== PHÂN TÍCH THÔNG TIN KHU VỰC ===== -->
-<section style="padding:60px 0;background:#0c1222;border-top:1px solid rgba(255,255,255,0.05);">
+<section style="padding:30px 0;background:#0c1222;border-top:1px solid rgba(255,255,255,0.05);">
   <div class="container">
-    <div style="text-align:center;max-width:680px;margin:0 auto 36px;">
-      <h2 style="font-size:28px;font-weight:800;color:#f1f5f9;margin-bottom:10px;">
-        📊 Báo Cáo Mức Giá & An Ninh Theo Từng Khu Vực
-      </h2>
-      <p style="color:#94a3b8;font-size:14px;">
-        Số liệu được tổng hợp theo thời gian thực từ hơn 5,000+ tin đăng và khảo sát thực tế tại Hà Nội
-      </p>
-    </div>
-
-    <div style="background:linear-gradient(145deg, #111827, #1a2235);border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,0.3);">
-      <div style="overflow-x:auto;">
-        <table class="district-stats-table">
-          <thead>
-            <tr>
-              <th>Khu vực / Quận</th>
-              <th>Mức giá trung bình</th>
-              <th>Độ an ninh</th>
-              <th>Trường đại học trọng điểm</th>
-              <th>Đặc điểm nổi bật</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong style="color:#ff8c42;">Cầu Giấy</strong></td>
-              <td>3.2 – 4.5 triệu</td>
-              <td><span style="color:#34d399;font-weight:600;">● Rất tốt</span></td>
-              <td>ĐH Quốc Gia, ĐH Sư Phạm, Học viện Báo Chí</td>
-              <td>Sầm uất, nhiều toà nhà văn phòng Duy Tân, Cầu Giấy</td>
-            </tr>
-            <tr>
-              <td><strong style="color:#ff8c42;">Đống Đa</strong></td>
-              <td>3.5 – 5.2 triệu</td>
-              <td><span style="color:#34d399;font-weight:600;">● Xuất sắc</span></td>
-              <td>ĐH Ngoại Thương, ĐH Luật, Học viện Ngoại Giao</td>
-              <td>Vị trí trung tâm nội thành, ngõ Chùa Láng ẩm thực nổi tiếng</td>
-            </tr>
-            <tr>
-              <td><strong style="color:#ff8c42;">Thanh Xuân</strong></td>
-              <td>2.8 – 3.8 triệu</td>
-              <td><span style="color:#34d399;font-weight:600;">● Rất tốt</span></td>
-              <td>ĐH KHXH&NV, ĐH KHTN, ĐH Hà Nội</td>
-              <td>Trục đường Nguyễn Trãi, có tuyến tàu điện Metro Cát Linh</td>
-            </tr>
-            <tr>
-              <td><strong style="color:#ff8c42;">Hai Bà Trưng</strong></td>
-              <td>2.8 – 4.0 triệu</td>
-              <td><span style="color:#34d399;font-weight:600;">● Tốt</span></td>
-              <td>ĐH Bách Khoa HN, Kinh Tế Quốc Dân, Xây Dựng</td>
-              <td>Cụm trường Bách – Kinh – Xây sầm uất, nhiều quán ăn sinh viên</td>
-            </tr>
-            <tr>
-              <td><strong style="color:#ff8c42;">Nam Từ Liêm</strong></td>
-              <td>3.0 – 4.6 triệu</td>
-              <td><span style="color:#34d399;font-weight:600;">● Rất tốt</span></td>
-              <td>ĐH Thương Mại, SVĐ Mỹ Đình, Keangnam</td>
-              <td>Nhiều chung cư mini mới xây, đường rộng, không kẹt xe</td>
-            </tr>
-            <tr>
-              <td><strong style="color:#ff8c42;">Hà Đông</strong></td>
-              <td>2.0 – 3.0 triệu</td>
-              <td><span style="color:#f59e0b;font-weight:600;">● Ổn định</span></td>
-              <td>Học viện Bưu Chính (PTIT), Kiến Trúc, An Ninh</td>
-              <td>Giá thuê rẻ, phòng rộng rãi, kết nối tàu điện trên cao</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <p class="advisor-note" style="max-width:900px;margin:auto;text-align:center;">Ứng dụng chưa có dữ liệu xác thực về an ninh, ngập lụt, lối vào hoặc tuyến giao thông. Trợ lý không tự suy đoán các thông tin này; vui lòng xác nhận với chủ trọ và khảo sát thực tế trước khi thuê.</p>
   </div>
 </section>
 
@@ -432,7 +349,249 @@
 <div id="toastContainer" class="toast-container"></div>
 
 @section Scripts {
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
+  (() => {
+    const form = document.getElementById('advisor-form');
+    if (!form) return;
+
+    const status = document.getElementById('advisor-status');
+    const progressSteps = [...document.querySelectorAll('[data-advisor-progress]')];
+    const cachedRoomLocations = new Map();
+    let lastGeocodeRequest = 0;
+    let analysisController = null;
+
+    const formatPrice = value => `${new Intl.NumberFormat('vi-VN').format(value)} đ`;
+
+    const updateRangeLabels = () => {
+      const minRent = document.getElementById('advisor-min-rent');
+      const maxRent = document.getElementById('advisor-max-rent');
+      if (Number(minRent.value) > Number(maxRent.value)) {
+        if (document.activeElement === minRent) maxRent.value = minRent.value;
+        else minRent.value = maxRent.value;
+      }
+      document.getElementById('advisor-min-value').textContent = formatPrice(Number(minRent.value));
+      document.getElementById('advisor-max-value').textContent = formatPrice(Number(maxRent.value));
+      document.getElementById('advisor-electricity-value').textContent =
+        `${document.getElementById('advisor-electricity').value} kWh/tháng`;
+      document.getElementById('advisor-water-value').textContent =
+        `${document.getElementById('advisor-water').value} người`;
+    };
+
+    document.querySelectorAll('#advisor-min-rent, #advisor-max-rent, #advisor-electricity, #advisor-water')
+      .forEach(input => input.addEventListener('input', updateRangeLabels));
+    updateRangeLabels();
+
+    document.getElementById('advisor-radius').addEventListener('input', event => {
+      document.getElementById('advisor-radius-value').textContent = `${event.target.value} km`;
+    });
+
+    const setStep = step => {
+      document.querySelectorAll('.advisor-step').forEach(section => {
+        section.hidden = section.id !== `advisor-step-${step}`;
+      });
+      progressSteps.forEach((item, index) => item.classList.toggle('active', index < step));
+      status.textContent = '';
+    };
+
+    document.querySelectorAll('[data-advisor-next]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (button.dataset.advisorNext === '2' &&
+            !document.getElementById('advisor-place').reportValidity()) return;
+        setStep(Number(button.dataset.advisorNext));
+      });
+    });
+
+    const geocode = async (query, signal, cacheable = false) => {
+      const cached = cacheable ? cachedRoomLocations.get(query) : null;
+      if (cached) return cached;
+
+      const delay = Math.max(0, 1100 - (Date.now() - lastGeocodeRequest));
+      if (delay) await new Promise(resolve => window.setTimeout(resolve, delay));
+      if (signal.aborted) throw new DOMException('Yêu cầu đã hủy.', 'AbortError');
+
+      const url = new URL('https://nominatim.openstreetmap.org/search');
+      url.search = new URLSearchParams({
+        q: query,
+        format: 'jsonv2',
+        limit: '1',
+        countrycodes: 'vn',
+        'accept-language': 'vi'
+      });
+      lastGeocodeRequest = Date.now();
+      const response = await fetch(url, {
+        signal,
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) throw new Error('Không thể tìm tọa độ trên OpenStreetMap. Vui lòng thử lại sau.');
+      const matches = await response.json();
+      if (!Array.isArray(matches) || matches.length === 0) return null;
+
+      const location = {
+        lat: Number(matches[0].lat),
+        lon: Number(matches[0].lon)
+      };
+      if (!Number.isFinite(location.lat) || !Number.isFinite(location.lon)) return null;
+      if (cacheable) cachedRoomLocations.set(query, location);
+      return location;
+    };
+
+    const calculateDistanceKm = (first, second) => {
+      const radians = degrees => degrees * Math.PI / 180;
+      const latDelta = radians(second.lat - first.lat);
+      const lonDelta = radians(second.lon - first.lon);
+      const haversine = Math.sin(latDelta / 2) ** 2 +
+        Math.cos(radians(first.lat)) * Math.cos(radians(second.lat)) *
+        Math.sin(lonDelta / 2) ** 2;
+      return 6371 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+    };
+
+    const goToRoomSuggestions = async (rooms, place, radiusKm, distanceUnverified) => {
+      const searchParams = new URLSearchParams();
+      rooms.forEach(room => {
+        searchParams.append('recommendedRoomIds', room.id);
+        searchParams.append('advisorScores', room.finalScore);
+        if (Number.isFinite(room.distanceKm)) {
+          searchParams.append('advisorDistances', room.distanceKm.toFixed(2));
+        }
+        if (room.location) {
+          searchParams.append('advisorRoomLats', room.location.lat);
+          searchParams.append('advisorRoomLons', room.location.lon);
+        }
+      });
+      if (place) {
+        searchParams.set('advisorLat', place.lat);
+        searchParams.set('advisorLon', place.lon);
+      }
+      searchParams.set('advisorDistanceUnverified', String(distanceUnverified));
+      searchParams.set('advisorRadiusKm', radiusKm);
+      searchParams.set('advisorPlace', document.getElementById('advisor-place').value.trim());
+      searchParams.set('advisorTransport', document.getElementById('advisor-transport').value);
+      searchParams.set('advisorElectricityKwh', document.getElementById('advisor-electricity').value);
+      searchParams.set('advisorOccupants', document.getElementById('advisor-water').value);
+      searchParams.set('minPrice', document.getElementById('advisor-min-rent').value);
+      searchParams.set('maxPrice', document.getElementById('advisor-max-rent').value);
+      [...form.querySelectorAll('.advisor-options input:checked')]
+        .forEach(input => searchParams.append('amenity', input.value));
+
+      const searchUrl = `/rooms?${searchParams.toString()}`;
+      status.textContent = 'Đã tìm thấy phòng phù hợp. Đang chuyển đến trang tìm phòng…';
+      if (typeof window.__troTotNavigate === 'function') {
+        await window.__troTotNavigate(searchUrl);
+      } else {
+        window.location.assign(searchUrl);
+      }
+    };
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      if (analysisController) analysisController.abort();
+      analysisController = new AbortController();
+      const { signal } = analysisController;
+      const submitButton = document.getElementById('advisor-submit');
+      submitButton.disabled = true;
+      progressSteps.forEach((item, index) => item.classList.toggle('active', index < 2));
+      status.textContent = 'Đang lọc phòng và định vị địa điểm trên OpenStreetMap…';
+
+      try {
+        const selected = [...form.querySelectorAll('.advisor-options input:checked')].map(input => input.value);
+        const query = new URLSearchParams({
+          minRent: document.getElementById('advisor-min-rent').value,
+          maxRent: document.getElementById('advisor-max-rent').value
+        });
+        selected.forEach(amenity => query.append('amenity', amenity));
+        const response = await fetch(`/api/rooms/recommendations?${query}`, {
+          signal,
+          headers: { Accept: 'application/json' }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Không thể tải danh sách phòng phù hợp.');
+        if (!data.recommendations.length) {
+          throw new Error('Chưa tìm thấy phòng trong khoảng giá này. Hãy thử nới rộng ngân sách hoặc bỏ bớt tiện ích.');
+        }
+
+        const placeQuery = `${document.getElementById('advisor-place').value.trim()}, Hà Nội, Việt Nam`;
+        const radiusKm = Number(document.getElementById('advisor-radius').value);
+        let place = null;
+        try {
+          place = await geocode(placeQuery, signal);
+        } catch (error) {
+          if (error.name === 'AbortError') throw error;
+        }
+        if (!place) {
+          const fallbackRooms = data.recommendations.slice(0, 3).map(room => ({
+            ...room,
+            finalScore: room.fitScore,
+            distanceKm: null,
+            location: null
+          }));
+          await goToRoomSuggestions(fallbackRooms, null, radiusKm, true);
+          return;
+        }
+
+        const candidates = [];
+        const unmappedRooms = [];
+        for (const room of data.recommendations.slice(0, 6)) {
+          status.textContent = `Đang kiểm tra vị trí phòng (${candidates.length + unmappedRooms.length + 1}/6)…`;
+          const locationQuery = `${room.address}, ${room.district}, Hà Nội, Việt Nam`;
+          let location;
+          try {
+            location = await geocode(locationQuery, signal, true);
+          } catch (error) {
+            if (error.name === 'AbortError') throw error;
+            unmappedRooms.push(room.title);
+            continue;
+          }
+          if (!location) {
+            unmappedRooms.push(room.title);
+            continue;
+          }
+
+          const distanceKm = calculateDistanceKm(place, location);
+          if (distanceKm <= radiusKm) {
+            const distanceScore = Math.max(0, 1 - distanceKm / radiusKm);
+            candidates.push({
+              ...room,
+              location,
+              distanceKm,
+              finalScore: Math.round(room.fitScore * 0.75 + distanceScore * 25)
+            });
+          }
+        }
+
+        const topRooms = candidates
+          .sort((first, second) => second.finalScore - first.finalScore || first.distanceKm - second.distanceKm)
+          .slice(0, 3);
+        if (!topRooms.length) {
+          if (!unmappedRooms.length) {
+            throw new Error(`Chưa có phòng được xác nhận trong bán kính ${radiusKm} km. Hãy thử tăng bán kính hoặc điều chỉnh ngân sách.`);
+          }
+
+          const fallbackRooms = data.recommendations.slice(0, 3).map(room => ({
+            ...room,
+            finalScore: room.fitScore,
+            distanceKm: null,
+            location: null
+          }));
+          await goToRoomSuggestions(fallbackRooms, place, radiusKm, true);
+          return;
+        }
+
+        await goToRoomSuggestions(topRooms, place, radiusKm, false);
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          status.textContent = error.message || 'Không thể hoàn thành phân tích. Vui lòng thử lại.';
+        }
+      } finally {
+        if (analysisController?.signal === signal) {
+          submitButton.disabled = false;
+          analysisController = null;
+        }
+      }
+    });
+  })();
+
   function openAskModal() {
     document.getElementById('askModal').style.display = 'flex';
   }

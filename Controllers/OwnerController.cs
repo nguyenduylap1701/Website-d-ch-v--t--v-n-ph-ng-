@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TroTot.Web.Data;
 using TroTot.Web.Models;
+using TroTot.Web.Services;
 using TroTot.Web.ViewModels;
 
 namespace TroTot.Web.Controllers;
@@ -17,11 +18,19 @@ public class OwnerController : Controller
 {
     private readonly AppDbContext _db;
     private readonly IPasswordHasher<AppUser> _hasher;
+    private readonly IWebHostEnvironment _environment;
+    private readonly ILogger<OwnerController> _logger;
 
-    public OwnerController(AppDbContext db, IPasswordHasher<AppUser> hasher)
+    public OwnerController(
+        AppDbContext db,
+        IPasswordHasher<AppUser> hasher,
+        IWebHostEnvironment environment,
+        ILogger<OwnerController> logger)
     {
         _db = db;
         _hasher = hasher;
+        _environment = environment;
+        _logger = logger;
     }
 
     [HttpGet("ho-so")]
@@ -109,9 +118,231 @@ public class OwnerController : Controller
     [HttpGet("phong")]
     public async Task<IActionResult> Rooms()
     {
-        return View(await OwnerRooms()
+        var rooms = await OwnerRooms()
             .OrderByDescending(room => room.CreatedAt)
-            .ToListAsync());
+            .ToListAsync();
+        var unreadRooms = rooms.Where(room => room.HasUnreadOwnerNotification).ToList();
+        if (unreadRooms.Count > 0)
+        {
+            foreach (var room in unreadRooms)
+                room.HasUnreadOwnerNotification = false;
+            await _db.SaveChangesAsync();
+        }
+
+        return View(rooms);
+    }
+
+    [HttpGet("phong/{id:int}/sua")]
+    public async Task<IActionResult> EditRoom(int id)
+    {
+        var room = await OwnerRooms().Include(item => item.Images)
+            .FirstOrDefaultAsync(item => item.Id == id);
+        if (room is null) return NotFound();
+
+        return View(new EditRoomForm
+        {
+            Title = room.Title,
+            RoomType = room.RoomType,
+            Area = room.Area,
+            Address = room.Address,
+            District = room.District,
+            Description = room.Description,
+            Rules = room.Rules,
+            VideoUrl = room.VideoUrl,
+            Price = room.Price,
+            DepositMonths = room.DepositMonths,
+            ElectricPrice = room.ElectricPrice,
+            WaterPrice = room.WaterPrice,
+            InternetFee = room.InternetFee,
+            ParkingFee = room.ParkingFee,
+            Amenities = room.Amenities.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(),
+            Package = room.Package,
+            ViewRoomImages = room.Images.OrderByDescending(image => image.IsPrimary).ThenBy(image => image.Id).ToList(),
+            HasIdentityFront = !string.IsNullOrWhiteSpace(room.IdentityFrontDocument),
+            HasIdentityBack = !string.IsNullOrWhiteSpace(room.IdentityBackDocument),
+            HasPropertyDocument = !string.IsNullOrWhiteSpace(room.PropertyDocument),
+            HasRoomLegalDocument = !string.IsNullOrWhiteSpace(room.RoomLegalDocument)
+        });
+    }
+
+    [HttpPost("phong/{id:int}/sua")]
+    [RequestSizeLimit(150_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 150_000_000)]
+    public async Task<IActionResult> EditRoom(int id, EditRoomForm form)
+    {
+        var room = await OwnerRooms().Include(item => item.Images)
+            .FirstOrDefaultAsync(item => item.Id == id);
+        if (room is null) return NotFound();
+
+        var removedImages = room.Images.Where(image => form.RemoveImageIds.Contains(image.Id)).ToList();
+        if (removedImages.Count != form.RemoveImageIds.Distinct().Count())
+            ModelState.AddModelError(nameof(form.RemoveImageIds), "Danh sách ảnh cần xóa không hợp lệ.");
+
+        var uploads = (form.Images ?? new List<IFormFile>()).Where(file => file.Length > 0).ToList();
+        var maxImages = form.Package switch { "basic" => 10, "premium" => 20, _ => 5 };
+        if (room.Images.Count - removedImages.Count + uploads.Count > maxImages)
+            ModelState.AddModelError(nameof(form.Images), $"Gói đăng tin chỉ cho phép tối đa {maxImages} ảnh.");
+
+        foreach (var image in uploads)
+        {
+            var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+            if (!new[] { ".jpg", ".jpeg", ".png", ".webp" }.Contains(extension) || image.Length > 5 * 1024 * 1024)
+                ModelState.AddModelError(nameof(form.Images), $"Ảnh \"{image.FileName}\" không hợp lệ (JPG/PNG/WEBP, tối đa 5MB).");
+        }
+
+        var legalUploads = new[]
+        {
+            (File: form.IdentityFront, Label: "CCCD mặt trước"),
+            (File: form.IdentityBack, Label: "CCCD mặt sau"),
+            (File: form.PropertyDocument, Label: "Sổ đỏ/hợp đồng thuê lại"),
+            (File: form.RoomLegalDocument, Label: "Giấy tờ phòng thuê")
+        };
+        foreach (var (file, label) in legalUploads)
+        {
+            if (file is null || file.Length == 0) continue;
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!new[] { ".jpg", ".jpeg", ".png", ".webp", ".pdf" }.Contains(extension) || file.Length > 10 * 1024 * 1024)
+                ModelState.AddModelError(string.Empty, $"{label}: chỉ chấp nhận JPG/PNG/WEBP/PDF, tối đa 10MB.");
+        }
+
+        var retainedDocuments = new[]
+        {
+            (Old: room.IdentityFrontDocument, New: form.IdentityFront),
+            (Old: room.IdentityBackDocument, New: form.IdentityBack),
+            (Old: room.PropertyDocument, New: form.PropertyDocument),
+            (Old: room.RoomLegalDocument, New: form.RoomLegalDocument)
+        };
+        if (retainedDocuments.Any(document =>
+                string.IsNullOrWhiteSpace(document.Old) && (document.New is null || document.New.Length == 0)))
+            ModelState.AddModelError(string.Empty, "Hãy tải lên các giấy tờ pháp lý còn thiếu trước khi cập nhật tin.");
+
+        if (!ModelState.IsValid)
+        {
+            PopulateEditRoomViewModel(form, room);
+            return View(form);
+        }
+
+        var previousLegalDocuments = new List<string?>();
+        if (form.IdentityFront is { Length: > 0 })
+        {
+            previousLegalDocuments.Add(room.IdentityFrontDocument);
+            room.IdentityFrontDocument = await SaveLegalDocumentAsync(form.IdentityFront);
+        }
+        if (form.IdentityBack is { Length: > 0 })
+        {
+            previousLegalDocuments.Add(room.IdentityBackDocument);
+            room.IdentityBackDocument = await SaveLegalDocumentAsync(form.IdentityBack);
+        }
+        if (form.PropertyDocument is { Length: > 0 })
+        {
+            previousLegalDocuments.Add(room.PropertyDocument);
+            room.PropertyDocument = await SaveLegalDocumentAsync(form.PropertyDocument);
+        }
+        if (form.RoomLegalDocument is { Length: > 0 })
+        {
+            previousLegalDocuments.Add(room.RoomLegalDocument);
+            room.RoomLegalDocument = await SaveLegalDocumentAsync(form.RoomLegalDocument);
+        }
+
+        _db.RoomImages.RemoveRange(removedImages);
+        foreach (var image in removedImages)
+            room.Images.Remove(image);
+
+        var roomImageDirectory = Path.Combine(_environment.WebRootPath, "uploads", "rooms");
+        Directory.CreateDirectory(roomImageDirectory);
+        foreach (var (image, index) in uploads.Select((file, index) => (file, index)))
+        {
+            var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+            var fileName = $"{Guid.NewGuid():N}{extension}";
+            await using var stream = new FileStream(
+                Path.Combine(roomImageDirectory, fileName), FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            await image.CopyToAsync(stream, HttpContext.RequestAborted);
+            room.Images.Add(new RoomImage
+            {
+                Path = $"/uploads/rooms/{fileName}",
+                IsPrimary = room.Images.Count == 0 && index == 0
+            });
+        }
+
+        if (room.Images.Count > 0 && room.Images.All(image => !image.IsPrimary))
+            room.Images.OrderBy(image => image.Id).First().IsPrimary = true;
+
+        room.Title = form.Title.Trim();
+        room.RoomType = form.RoomType;
+        room.Area = form.Area!.Value;
+        room.Address = form.Address.Trim();
+        room.District = form.District.Trim();
+        room.Description = form.Description?.Trim();
+        room.Rules = form.Rules?.Trim();
+        room.VideoUrl = form.VideoUrl?.Trim();
+        room.Price = form.Price!.Value;
+        room.DepositMonths = form.DepositMonths ?? 2;
+        room.ElectricPrice = form.ElectricPrice ?? 3500;
+        room.WaterPrice = form.WaterPrice ?? 80000;
+        room.InternetFee = form.InternetFee ?? 0;
+        room.ParkingFee = form.ParkingFee ?? 150000;
+        room.Amenities = form.Amenities is { Count: > 0 } ? string.Join(",", form.Amenities) : "";
+        room.Package = form.Package;
+        room.Status = RoomStatus.Pending;
+        room.LegalStatus = LegalVerificationStatus.Pending;
+        room.IsVerified = false;
+        room.HasUnreadOwnerNotification = false;
+        await _db.SaveChangesAsync();
+
+        RoomFileCleanup.DeleteImages(removedImages, _environment, _logger);
+        RoomFileCleanup.DeleteLegalDocuments(previousLegalDocuments, _environment, _logger);
+        TempData["Success"] = "Đã cập nhật tin đăng. Tin đang chờ admin duyệt lại.";
+        return RedirectToAction(nameof(Rooms));
+    }
+
+    private void PopulateEditRoomViewModel(EditRoomForm form, Room room)
+    {
+        form.ViewRoomImages = room.Images.OrderByDescending(image => image.IsPrimary).ThenBy(image => image.Id).ToList();
+        form.HasIdentityFront = !string.IsNullOrWhiteSpace(room.IdentityFrontDocument);
+        form.HasIdentityBack = !string.IsNullOrWhiteSpace(room.IdentityBackDocument);
+        form.HasPropertyDocument = !string.IsNullOrWhiteSpace(room.PropertyDocument);
+        form.HasRoomLegalDocument = !string.IsNullOrWhiteSpace(room.RoomLegalDocument);
+    }
+
+    private async Task<string> SaveLegalDocumentAsync(IFormFile document)
+    {
+        var extension = Path.GetExtension(document.FileName).ToLowerInvariant();
+        var fileName = $"{Guid.NewGuid():N}{extension}";
+        var directory = Path.Combine(_environment.ContentRootPath, "App_Data", "verification-documents");
+        Directory.CreateDirectory(directory);
+
+        var path = Path.Combine(directory, fileName);
+        await using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        await document.CopyToAsync(stream, HttpContext.RequestAborted);
+        return fileName;
+    }
+
+    [HttpPost("phong/{id:int}/xoa")]
+    public async Task<IActionResult> DeleteRoom(int id)
+    {
+        var room = await OwnerRooms()
+            .Include(item => item.Images)
+            .FirstOrDefaultAsync(item => item.Id == id);
+        if (room is null) return NotFound();
+
+        if (await _db.RentalContracts.AnyAsync(contract => contract.RoomId == id) ||
+            await _db.UtilityBills.AnyAsync(bill => bill.RoomId == id) ||
+            await _db.RepairRequests.AnyAsync(request => request.RoomId == id))
+        {
+            TempData["Error"] = "Không thể xóa tin này vì phòng đang có hợp đồng, hóa đơn hoặc yêu cầu sửa chữa được lưu.";
+            return RedirectToAction(nameof(Rooms));
+        }
+
+        var reviews = await _db.RoomReviews.Where(review => review.RoomId == id).ToListAsync();
+        var viewingRequests = await _db.ViewingRequests.Where(request => request.RoomId == id).ToListAsync();
+        _db.RoomReviews.RemoveRange(reviews);
+        _db.ViewingRequests.RemoveRange(viewingRequests);
+        _db.Rooms.Remove(room);
+        await _db.SaveChangesAsync();
+
+        RoomFileCleanup.Delete(room, _environment, _logger);
+        TempData["Success"] = $"Đã xóa tin \"{room.Title}\".";
+        return RedirectToAction(nameof(Rooms));
     }
 
     [HttpGet("hop-dong")]

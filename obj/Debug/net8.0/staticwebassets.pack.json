@@ -1,28 +1,32 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\components.css",
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\components.css",
       "PackagePath": "staticwebassets\\css\\components.css"
     },
     {
-      "Id": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\style.css",
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\style.css",
       "PackagePath": "staticwebassets\\css\\style.css"
     },
     {
-      "Id": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\data.js",
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\data.js",
       "PackagePath": "staticwebassets\\js\\data.js"
     },
     {
-      "Id": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\main.js",
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\main.js",
       "PackagePath": "staticwebassets\\js\\main.js"
     },
     {
-      "Id": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\spa-navigation.js",
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\spa-navigation.js",
       "PackagePath": "staticwebassets\\js\\spa-navigation.js"
     },
     {
-      "Id": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\uploads\\rooms\\20070928f67647b6b30395399bbcebbd.jpg",
-      "PackagePath": "staticwebassets\\uploads\\rooms\\20070928f67647b6b30395399bbcebbd.jpg"
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\uploads\\reviews\\e78edfa7d55c4f028e4b59790651e5db.jpg",
+      "PackagePath": "staticwebassets\\uploads\\reviews\\e78edfa7d55c4f028e4b59790651e5db.jpg"
+    },
+    {
+      "Id": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\uploads\\rooms\\90c1255265b34b69ab671e4cee4ea505.jpg",
+      "PackagePath": "staticwebassets\\uploads\\rooms\\90c1255265b34b69ab671e4cee4ea505.jpg"
     },
     {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.TroTot.Web.Microsoft.AspNetCore.StaticWebAssets.props",

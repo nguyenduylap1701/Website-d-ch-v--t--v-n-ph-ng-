@@ -15,7 +15,7 @@
 
 <main class="admin-management">
   <header class="admin-management-heading">
-    <div><span class="admin-kicker">KIỂM DUYỆT NỘI DUNG</span><h1>Quản lý đăng tin</h1><p>@ViewBag.TotalRooms tin đăng · @ViewBag.PendingRooms đang chờ duyệt</p></div>
+    <div><span class="admin-kicker">KIỂM DUYỆT NỘI DUNG</span><h1>Quản lý đăng tin</h1><p>@ViewBag.TotalRooms tin đăng · @ViewBag.PendingRooms chờ duyệt tin · @ViewBag.PendingLegalRooms chờ xác minh pháp lý</p></div>
   </header>
 
   <nav class="admin-filter-tabs" aria-label="Lọc trạng thái tin đăng">
@@ -36,24 +36,34 @@
     {
       <div class="admin-table-scroll">
         <table class="admin-table admin-management-table">
-          <thead><tr><th>TIN ĐĂNG</th><th>CHỦ TRỌ</th><th>GIÁ / THÁNG</th><th>TRẠNG THÁI</th><th>NGÀY ĐĂNG</th><th>THAO TÁC</th></tr></thead>
+          <thead><tr><th>TIN ĐĂNG</th><th>CHỦ TRỌ</th><th>GIÁ / THÁNG</th><th>TRẠNG THÁI</th><th>PHÁP LÝ</th><th>NGÀY ĐĂNG</th><th>THAO TÁC</th></tr></thead>
           <tbody>
           @foreach (var room in Model)
           {
             <tr>
-              <td><a class="admin-room-title" href="/phong/@room.Id">@room.Title</a><span class="admin-subtext">@room.District · @room.Area m² · @(room.RoomType == "single" ? "Phòng đơn" : room.RoomType == "shared" ? "Ở ghép" : "Căn hộ mini")</span></td>
+              <td><a class="admin-room-title" href="/phong/@room.Id">@room.Title</a><span class="admin-subtext">@room.District · @room.Area m² · @(room.RoomType == "single" ? "Phòng đơn" : room.RoomType == "shared" ? "Ở ghép" : "Căn hộ mini")</span><a class="admin-subtext" href="/quan-tri/dang-tin/@room.Id">Xem tin và hồ sơ →</a></td>
               <td>@(room.Owner?.FullName ?? "—")<span class="admin-subtext">@(room.Owner?.Phone ?? "")</span></td>
               <td>@room.Price.ToString("#,##0") đ</td>
               <td><span class="admin-status @(room.Status == TroTot.Web.Models.RoomStatus.Pending ? "pending" : room.Status == TroTot.Web.Models.RoomStatus.Rejected ? "inactive" : "")">@StatusText(room.Status)</span></td>
+              <td><span class="admin-status @(room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Pending ? "pending" : room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Rejected ? "inactive" : "")">@(room.LegalStatus switch { TroTot.Web.Models.LegalVerificationStatus.Approved => "Đã xác minh", TroTot.Web.Models.LegalVerificationStatus.Rejected => "Từ chối", _ => "Chờ xác minh" })</span></td>
               <td>@room.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
               <td>
                 <div class="admin-row-actions">
-                  @if (room.Status != TroTot.Web.Models.RoomStatus.Approved)
+                  @if (room.Status != TroTot.Web.Models.RoomStatus.Approved &&
+                       (room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Approved ||
+                        (string.IsNullOrWhiteSpace(room.IdentityFrontDocument) &&
+                         string.IsNullOrWhiteSpace(room.IdentityBackDocument) &&
+                         string.IsNullOrWhiteSpace(room.PropertyDocument) &&
+                         string.IsNullOrWhiteSpace(room.RoomLegalDocument))))
                   {
                     <form method="post" action="/quan-tri/dang-tin/@room.Id/duyet">
                       @Html.AntiForgeryToken()
                       <button type="submit" class="admin-action-button primary">Duyệt</button>
                     </form>
+                  }
+                  else if (room.Status != TroTot.Web.Models.RoomStatus.Approved)
+                  {
+                    <a class="admin-action-button primary" href="/quan-tri/dang-tin/@room.Id">Xác minh hồ sơ</a>
                   }
                   @if (room.Status != TroTot.Web.Models.RoomStatus.Rejected)
                   {

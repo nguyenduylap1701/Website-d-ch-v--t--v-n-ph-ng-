@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj": {}
+    "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj": {
+    "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj",
+        "projectUniqueName": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj",
         "projectName": "TroTot.Web",
-        "projectPath": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj",
+        "projectPath": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\TroTot.Web.csproj",
         "packagesPath": "C:\\Users\\Dell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\obj\\",
+        "outputPath": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Dell\\AppData\\Roaming\\NuGet\\NuGet.Config",

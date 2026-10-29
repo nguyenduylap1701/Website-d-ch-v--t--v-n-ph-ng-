@@ -15,6 +15,28 @@
     var districts = (IEnumerable<string>?)ViewBag.Districts ?? Array.Empty<string>();
     var verifiedOnly = (bool?)ViewBag.VerifiedOnly == true;
     var sort = (string?)ViewBag.Sort ?? "newest";
+    var isAdvisorResults = (bool?)ViewBag.IsAdvisorResults == true;
+    var advisorPlace = (string?)ViewBag.AdvisorPlace ?? "";
+    var advisorDistanceUnverified = (bool?)ViewBag.AdvisorDistanceUnverified == true;
+    var advisorRadius = (int?)ViewBag.AdvisorRadiusKm;
+    var advisorMinPrice = (long?)ViewBag.MinPrice;
+    var advisorMaxPrice = (long?)ViewBag.MaxPrice;
+    var advisorTransport = (string?)ViewBag.AdvisorTransport ?? "";
+    var advisorElectricityKwh = (int?)ViewBag.AdvisorElectricityKwh;
+    var advisorOccupants = (int?)ViewBag.AdvisorOccupants;
+    var advisorLatitude = (double?)ViewBag.AdvisorLatitude;
+    var advisorLongitude = (double?)ViewBag.AdvisorLongitude;
+    var advisorRoomScores = ViewBag.AdvisorRoomScores as Dictionary<int, int> ?? new();
+    var advisorRoomDistances = ViewBag.AdvisorRoomDistances as Dictionary<int, double> ?? new();
+    var advisorRoomLocations = ViewBag.AdvisorRoomLocations as Dictionary<int, double[]> ?? new();
+    var advisorMapMarkers = Model
+        .Where(room => advisorRoomLocations.ContainsKey(room.Id))
+        .Select(room => new
+        {
+            title = room.Title,
+            coordinates = advisorRoomLocations[room.Id]
+        })
+        .ToList();
     var priceLabels = new Dictionary<string, string>
     {
         ["under-3m"] = "Dưới 3 triệu",
@@ -22,6 +44,68 @@
         ["5-8m"] = "5 đến dưới 8 triệu",
         ["over-8m"] = "Từ 8 triệu"
     };
+}
+
+@section Styles {
+  @if (isAdvisorResults)
+  {
+    <style>
+      .advisor-search-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 18px; padding: 20px; border: 1px solid #cfe7e3; border-radius: 16px; background: linear-gradient(120deg, #effaf7, #fff); }
+      .advisor-search-summary h2 { margin: 4px 0; color: #183b39; font-size: 1.25rem; }
+      .advisor-search-summary p { margin: 0; color: #60716f; }
+      .advisor-search-kicker { color: #147d70; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+      .advisor-search-map { height: 320px; margin: 0 0 5px; border: 1px solid var(--line); border-radius: 14px; z-index: 0; }
+      .advisor-search-map-note { margin: 0 0 14px; color: var(--muted); font-size: .75rem; }
+      .advisor-room-match { margin: 0 0 10px; color: #147d70; font-size: .85rem; }
+      .advisor-room-match strong { font-weight: 800; }
+      @@media (max-width: 640px) {
+        .advisor-search-summary { align-items: flex-start; flex-direction: column; }
+      }
+    </style>
+  }
+  @if (isAdvisorResults && advisorLatitude.HasValue && advisorLongitude.HasValue && advisorMapMarkers.Count > 0)
+  {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  }
+}
+
+@section Scripts {
+  @if (isAdvisorResults && advisorLatitude.HasValue && advisorLongitude.HasValue)
+  {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+      (() => {
+        const mapElement = document.getElementById('advisor-search-map');
+        if (!mapElement || !window.L) return;
+
+        const origin = [
+          @advisorLatitude.Value.ToString(CultureInfo.InvariantCulture),
+          @advisorLongitude.Value.ToString(CultureInfo.InvariantCulture)
+        ];
+        const markers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(advisorMapMarkers));
+        const map = window.L.map(mapElement).setView(origin, 13);
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const points = [window.L.marker(origin).addTo(map).bindPopup('Địa điểm học tập / làm việc')];
+        markers.forEach((room, index) => {
+          const popup = document.createElement('span');
+          popup.textContent = `Phòng gợi ý ${index + 1}: ${room.title}`;
+          points.push(window.L.marker(room.coordinates).addTo(map).bindPopup(popup));
+        });
+        if (points.length > 1) {
+          map.fitBounds(window.L.featureGroup(points).getBounds().pad(0.18), { maxZoom: 14 });
+        }
+        @if (advisorRadius.HasValue)
+        {
+          <text>window.L.circle(origin, { radius: @((advisorRadius.Value * 1000).ToString(CultureInfo.InvariantCulture)), color: '#147d70', fillOpacity: 0.06 }).addTo(map);</text>
+        }
+        window.setTimeout(() => map.invalidateSize(), 100);
+      })();
+    </script>
+  }
 }
 
 <section class="rooms-page-hero">
@@ -84,7 +168,7 @@
             <label class="filter-group-label">Tiện nghi</label>
             <p class="filter-hint">Phòng cần có tất cả tiện nghi bạn chọn.</p>
             <div class="filter-checks">
-              @foreach (var item in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng" })
+              @foreach (var item in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng", "Máy giặt", "Không chung chủ" })
               {
                 <label class="filter-check">
                   <input type="checkbox" name="amenity" value="@item" checked="@(amenities.Contains(item, StringComparer.OrdinalIgnoreCase) ? "checked" : null)" data-filter-amenity />
@@ -116,6 +200,55 @@
       </aside>
 
       <section class="rooms-results">
+        @if (isAdvisorResults)
+        {
+          <section class="advisor-search-summary" aria-labelledby="advisor-search-title">
+            <div>
+              <span class="advisor-search-kicker">Gợi ý từ Trợ lý tìm trọ</span>
+              @if (advisorDistanceUnverified)
+              {
+                <h2 id="advisor-search-title">Phòng phù hợp theo nhu cầu</h2>
+              }
+              else
+              {
+                <h2 id="advisor-search-title">Phòng phù hợp gần @advisorPlace</h2>
+              }
+              <p>
+                @if (advisorDistanceUnverified)
+                {
+                  <span>Chưa định vị được đầy đủ địa chỉ phòng nên chưa thể xác nhận bán kính; danh sách được xếp theo ngân sách và tiện ích. </span>
+                }
+                else if (advisorRadius.HasValue)
+                {
+                  <span>Bán kính tối đa @advisorRadius km · </span>
+                }
+                @if (advisorMinPrice.HasValue && advisorMaxPrice.HasValue)
+                {
+                  <span>Ngân sách @advisorMinPrice.Value.ToString("#,##0", CultureInfo.GetCultureInfo("vi-VN"))–@advisorMaxPrice.Value.ToString("#,##0", CultureInfo.GetCultureInfo("vi-VN"))đ · </span>
+                }
+                @if (advisorTransport == "bus")
+                {
+                  <span>Xe buýt · </span>
+                }
+                else if (advisorTransport == "bicycle")
+                {
+                  <span>Xe đạp điện · </span>
+                }
+                else if (advisorTransport == "motorbike")
+                {
+                  <span>Xe máy · </span>
+                }
+                @Model.Count phòng phù hợp được tìm thấy theo ngân sách và tiện ích bạn đã chọn.
+              </p>
+            </div>
+            <a href="/tu-van" class="btn-outline-primary">← Điều chỉnh nhu cầu</a>
+          </section>
+          @if (advisorLatitude.HasValue && advisorLongitude.HasValue && advisorMapMarkers.Count > 0)
+          {
+            <div id="advisor-search-map" class="advisor-search-map" role="region" aria-label="Bản đồ các phòng được gợi ý"></div>
+            <p class="advisor-search-map-note">Khoảng cách là đường chim bay ước tính. Bản đồ © OpenStreetMap contributors.</p>
+          }
+        }
         <div class="rooms-toolbar">
           <div class="room-type-tabs" aria-label="Lọc theo loại phòng">
             <button type="button" class="room-type-tab @(string.IsNullOrEmpty(type) ? "active" : "")" data-room-type="">Tất cả phòng</button>
@@ -162,7 +295,7 @@
           <div class="quick-filter quick-amenities">
             <span>✨ Tiện nghi</span>
             <div class="quick-amenity-options">
-              @foreach (var item in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng" })
+              @foreach (var item in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng", "Máy giặt", "Không chung chủ" })
               {
                 <label class="quick-amenity">
                   <input type="checkbox" value="@item" data-quick-amenity checked="@(amenities.Contains(item, StringComparer.OrdinalIgnoreCase) ? "checked" : null)" />
@@ -213,6 +346,22 @@
                       </div>
                       <span class="room-price">@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", room.Price)</span>
                     </div>
+                    @if (isAdvisorResults && advisorRoomScores.TryGetValue(room.Id, out var fitScore))
+                    {
+                      <p class="advisor-room-match">
+                        <strong>✨ @fitScore% phù hợp</strong>
+                        @if (!advisorDistanceUnverified && advisorRoomDistances.TryGetValue(room.Id, out var distanceKm))
+                        {
+                          <span>· cách địa điểm của bạn @distanceKm.ToString("0.0") km</span>
+                        }
+                      </p>
+                      @if (advisorElectricityKwh.HasValue && advisorOccupants.HasValue)
+                      {
+                        var estimatedElectricity = (long)room.ElectricPrice * advisorElectricityKwh.Value;
+                        var estimatedWater = (long)room.WaterPrice * advisorOccupants.Value;
+                        <p class="room-description">Ước tính theo nhu cầu của bạn: điện @String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", estimatedElectricity), nước @String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", estimatedWater) · tổng khoảng @String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ", room.Price + estimatedElectricity + estimatedWater)/tháng.</p>
+                      }
+                    }
 
                     <div class="room-meta">
                       <span>📍 @room.District</span>

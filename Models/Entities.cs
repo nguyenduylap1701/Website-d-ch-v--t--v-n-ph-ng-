@@ -4,14 +4,28 @@ namespace TroTot.Web.Models;
 
 public enum UserRole
 {
-    Tenant = 0,   // Người thuê
-    Owner = 1,    // Chủ trọ
+    Tenant = 0,   
+    Owner = 1,   
     Admin = 2
 }
 
 public enum RoomStatus
 {
-    Pending = 0,  // Chờ duyệt
+    Pending = 0, 
+    Approved = 1,
+    Rejected = 2
+}
+
+public enum RoomAvailability
+{
+    Available = 0,      // Trống
+    PendingDeposit = 1, // Đang chờ đặt cọc (Khóa tạm thời)
+    Rented = 2          // Đã cho thuê
+}
+
+public enum LegalVerificationStatus
+{
+    Pending = 0,
     Approved = 1,
     Rejected = 2
 }
@@ -54,7 +68,6 @@ public class Room
     [MaxLength(200)]
     public string Title { get; set; } = "";
 
-    /// <summary>single | shared | mini</summary>
     [MaxLength(20)]
     public string RoomType { get; set; } = "single";
 
@@ -78,15 +91,28 @@ public class Room
     public int InternetFee { get; set; }
     public int ParkingFee { get; set; } = 150000;
 
-    /// <summary>Danh sách tiện nghi, ngăn cách bằng dấu phẩy</summary>
     public string Amenities { get; set; } = "";
 
-    /// <summary>free | basic | premium</summary>
+   
     [MaxLength(20)]
     public string Package { get; set; } = "free";
 
     public RoomStatus Status { get; set; } = RoomStatus.Pending;
+    public RoomAvailability AvailabilityStatus { get; set; } = RoomAvailability.Available;
     public bool IsVerified { get; set; }
+    [MaxLength(100)]
+    public string? IdentityFrontDocument { get; set; }
+
+    [MaxLength(100)]
+    public string? IdentityBackDocument { get; set; }
+
+    [MaxLength(100)]
+    public string? PropertyDocument { get; set; }
+
+    [MaxLength(100)]
+    public string? RoomLegalDocument { get; set; }
+    public LegalVerificationStatus LegalStatus { get; set; } = LegalVerificationStatus.Pending;
+    public bool HasUnreadOwnerNotification { get; set; }
 
     public int OwnerId { get; set; }
     public AppUser? Owner { get; set; }
@@ -102,12 +128,10 @@ public class RoomImage
     public int RoomId { get; set; }
     public Room? Room { get; set; }
 
-    /// <summary>Đường dẫn công khai, ví dụ /uploads/rooms/abc.jpg</summary>
     public string Path { get; set; } = "";
     public bool IsPrimary { get; set; }
 }
 
-/// <summary>Yêu cầu tư vấn (trang Tư vấn và form ở trang chủ)</summary>
 public class ConsultationRequest
 {
     public int Id { get; set; }
@@ -159,7 +183,10 @@ public class RoomReview
     public int Rating { get; set; }
     [MaxLength(2000)]
     public string Content { get; set; } = "";
+    [MaxLength(300)]
+    public string? ImagePath { get; set; }
     public bool IsPublished { get; set; }
+    public bool IsReviewed { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -210,4 +237,26 @@ public class RepairRequest
     public string Description { get; set; } = "";
     public RepairStatus Status { get; set; } = RepairStatus.New;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
+public class RoomDeposit
+{
+    public int Id { get; set; }
+    public int RoomId { get; set; }
+    public Room? Room { get; set; }
+    public int TenantId { get; set; }
+    public AppUser? Tenant { get; set; }
+    
+    public long Amount { get; set; }
+    [MaxLength(80)]
+    public string TransactionCode { get; set; } = "";
+    public string OrderInfo { get; set; } = "";
+    [MaxLength(100)]
+    public string? VnPayTransactionId { get; set; }
+    public string Status { get; set; } = "Pending"; // Pending, Success, Failed, Expired
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime ExpiresAt { get; set; }
+    public DateTime? PaidAt { get; set; }
+    [MaxLength(40)]
+    public string? ReceiptCode { get; set; }
 }

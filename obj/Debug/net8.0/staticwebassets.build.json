@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "C8inNkrN3V+enyMjERVFmcjgH7bAE3cVj1t7Q61btbw=",
+  "Hash": "lU2xHvChnUepmD120QFsQ/xk88RgC3a62y4vI2BcugQ=",
   "Source": "TroTot.Web",
   "BasePath": "_content/TroTot.Web",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "TroTot.Web\\wwwroot",
       "Source": "TroTot.Web",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\components.css",
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\components.css",
       "SourceId": "TroTot.Web",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
       "RelativePath": "css/components.css",
       "AssetKind": "All",
@@ -36,10 +36,10 @@
       "OriginalItemSpec": "wwwroot\\css\\components.css"
     },
     {
-      "Identity": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\style.css",
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\css\\style.css",
       "SourceId": "TroTot.Web",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
       "RelativePath": "css/style.css",
       "AssetKind": "All",
@@ -55,10 +55,10 @@
       "OriginalItemSpec": "wwwroot\\css\\style.css"
     },
     {
-      "Identity": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\data.js",
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\data.js",
       "SourceId": "TroTot.Web",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
       "RelativePath": "js/data.js",
       "AssetKind": "All",
@@ -74,10 +74,10 @@
       "OriginalItemSpec": "wwwroot\\js\\data.js"
     },
     {
-      "Identity": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\main.js",
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\main.js",
       "SourceId": "TroTot.Web",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
       "RelativePath": "js/main.js",
       "AssetKind": "All",
@@ -93,10 +93,10 @@
       "OriginalItemSpec": "wwwroot\\js\\main.js"
     },
     {
-      "Identity": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\spa-navigation.js",
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\js\\spa-navigation.js",
       "SourceId": "TroTot.Web",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
       "RelativePath": "js/spa-navigation.js",
       "AssetKind": "All",
@@ -112,12 +112,12 @@
       "OriginalItemSpec": "wwwroot\\js\\spa-navigation.js"
     },
     {
-      "Identity": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\uploads\\rooms\\20070928f67647b6b30395399bbcebbd.jpg",
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\uploads\\reviews\\e78edfa7d55c4f028e4b59790651e5db.jpg",
       "SourceId": "TroTot.Web",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\Dell\\Downloads\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
       "BasePath": "_content/TroTot.Web",
-      "RelativePath": "uploads/rooms/20070928f67647b6b30395399bbcebbd.jpg",
+      "RelativePath": "uploads/reviews/e78edfa7d55c4f028e4b59790651e5db.jpg",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -128,7 +128,26 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\uploads\\rooms\\20070928f67647b6b30395399bbcebbd.jpg"
+      "OriginalItemSpec": "wwwroot\\uploads\\reviews\\e78edfa7d55c4f028e4b59790651e5db.jpg"
+    },
+    {
+      "Identity": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\uploads\\rooms\\90c1255265b34b69ab671e4cee4ea505.jpg",
+      "SourceId": "TroTot.Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\BTL WNC G.04\\TroTot.Web-update\\TroTot.Web\\wwwroot\\",
+      "BasePath": "_content/TroTot.Web",
+      "RelativePath": "uploads/rooms/90c1255265b34b69ab671e4cee4ea505.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\rooms\\90c1255265b34b69ab671e4cee4ea505.jpg"
     }
   ]
 }

@@ -1,0 +1,14 @@
+@{
+    ViewData["Title"] = ViewBag.Title ?? "Kết quả thanh toán";
+}
+
+<main class="container" style="max-width: 760px; padding: 48px 16px;">
+    <section class="summary-card" style="padding: 32px; text-align: center;">
+        <h1>@ViewBag.Title</h1>
+        <p>@ViewBag.Message</p>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 24px;">
+            <a class="btn-primary" href="/">Quay về trang chủ</a>
+            <a class="btn-secondary" href="/phong/@ViewBag.RoomId">Quay lại phòng</a>
+        </div>
+    </section>
+</main>

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TroTot.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e50f154e958e573bb0d867de4c126567bee2941b")]
 [assembly: System.Reflection.AssemblyProductAttribute("TroTot.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TroTot.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

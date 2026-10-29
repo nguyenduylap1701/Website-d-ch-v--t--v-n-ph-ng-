@@ -1,5 +1,8 @@
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@inject Microsoft.Extensions.Configuration.IConfiguration AppConfiguration
 @model TroTot.Web.Models.Room
 @using System.Globalization
+@using TroTot.Web.Models
 @{
     ViewData["Title"] = Model.Title + " | TroTot.vn";
     ViewData["Description"] = Model.Description ?? "Chi tiết phòng trọ";
@@ -11,6 +14,8 @@
     var relatedRooms = ViewBag.RelatedRooms as IEnumerable<TroTot.Web.Models.Room> ?? Enumerable.Empty<TroTot.Web.Models.Room>();
     var reviews = ViewBag.RoomReviews as IEnumerable<TroTot.Web.Models.RoomReview> ?? Enumerable.Empty<TroTot.Web.Models.RoomReview>();
     var primaryImage = imageList.First();
+    var mockConfirmationEnabled = bool.TryParse(AppConfiguration["VnPay:EnableMockConfirmation"], out var mockEnabled) && mockEnabled;
+    var allowMockDeposit = HostEnvironment.IsDevelopment() && mockConfirmationEnabled;
 }
 
 <section class="room-detail-hero">
@@ -130,7 +135,7 @@
           </form>
         </div>
 
-        <div class="summary-card">
+                <div class="summary-card">
           <h3>Chi phí gần gũi</h3>
           <ul>
             <li><span>Điện</span><strong>@String.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:#,##0}đ" , Model.ElectricPrice)/kWh</strong></li>
@@ -139,13 +144,50 @@
             <li><span>Đặt cọc</span><strong>@Model.DepositMonths tháng</strong></li>
           </ul>
         </div>
+
+        @if (Model.AvailabilityStatus == RoomAvailability.Available)
+        {
+            <div class="summary-card deposit-section">
+                <h3>Giữ chỗ nhanh</h3>
+                <p style="font-size: 0.85rem; margin-bottom: 12px; color: var(--muted);">Đặt cọc trực tuyến 500,000đ để giữ phòng ngay trong 24h.</p>
+                <button type="button" id="btn-deposit" class="btn-primary w-full" onclick="handleDeposit(@Model.Id)">
+                    Đặt cọc giữ chỗ
+                </button>
+                @if (allowMockDeposit)
+                {
+                    <div id="mock-deposit-panel" hidden style="margin-top: 16px; padding: 14px; border: 1px dashed #d97706; border-radius: 12px;">
+                        <p style="margin: 0 0 10px; color: #92400e;"><strong>Demo:</strong> Nút này mô phỏng thanh toán thành công, không xác minh tiền đã chuyển.</p>
+                        <form id="mock-deposit-form" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-secondary w-full">Xác nhận thành công (mô phỏng)</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+        else if (Model.AvailabilityStatus == RoomAvailability.PendingDeposit)
+        {
+            <div class="summary-card deposit-section">
+                <p style="color: #d97706; font-weight: bold; text-align: center;">⚠️ Phòng đang có người đặt chỗ...</p>
+            </div>
+        }
+        else if (Model.AvailabilityStatus == RoomAvailability.Rented)
+        {
+            <div class="summary-card deposit-section">
+                <p style="color: #ef4444; font-weight: bold; text-align: center;">🚫 Phòng đã được thuê</p>
+            </div>
+        }
       </aside>
+
     </div>
 
     <section class="detail-card room-reviews" id="reviews">
       <div class="room-reviews-heading">
         <div><h2>Đánh giá phòng</h2><p>Chia sẻ trải nghiệm thực tế của bạn</p></div>
-        <span class="room-review-count">@reviews.Count() đánh giá</span>
+        <div class="room-review-summary">
+          <strong title="Điểm trung bình trên 5 sao">@(reviews.Any() ? ((double)ViewBag.RoomAverageRating).ToString("0.0") : "–")/5 <span aria-hidden="true">★</span></strong>
+          <span class="room-review-count">@reviews.Count() đánh giá</span>
+        </div>
       </div>
       @if (reviews.Any())
       {
@@ -159,6 +201,12 @@
                 <time datetime="@review.CreatedAt.ToString("yyyy-MM-dd")">@review.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</time>
               </div>
               <p>@review.Content</p>
+              @if (!string.IsNullOrWhiteSpace(review.ImagePath))
+              {
+                <a class="room-review-image-link" href="@review.ImagePath" target="_blank" rel="noopener noreferrer">
+                  <img class="room-review-image" src="@review.ImagePath" alt="Ảnh đính kèm đánh giá" loading="lazy" />
+                </a>
+              }
             </article>
           }
         </div>
@@ -168,29 +216,36 @@
         <p class="room-review-empty">Chưa có đánh giá được duyệt cho phòng này.</p>
       }
 
-      @if (User.IsInRole(nameof(TroTot.Web.Models.UserRole.Tenant)))
+      @if (User.Identity?.IsAuthenticated == true)
       {
-        <form method="post" action="/phong/@Model.Id/danh-gia" class="room-review-form">
+        <form method="post" action="/phong/@Model.Id/danh-gia" enctype="multipart/form-data" class="room-review-form" id="room-review-form-mvc">
           @Html.AntiForgeryToken()
           <h3>Viết đánh giá</h3>
-          <label for="review-rating">Số sao</label>
-          <select id="review-rating" name="rating" required>
-            <option value="">Chọn số sao</option>
-            <option value="5">5 sao – Rất hài lòng</option>
-            <option value="4">4 sao – Hài lòng</option>
-            <option value="3">3 sao – Bình thường</option>
-            <option value="2">2 sao – Chưa hài lòng</option>
-            <option value="1">1 sao – Không hài lòng</option>
-          </select>
+          <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 10px;">
+              <i class="fas fa-info-circle"></i> Chỉ người đã có hợp đồng thuê phòng này mới có thể đánh giá.
+          </p>
+          <fieldset class="room-review-rating">
+            <legend>Số sao</legend>
+            @for (var rating = 1; rating <= 5; rating++)
+            {
+              <input id="review-rating-@rating" type="radio" name="rating" value="@rating" required />
+              <label for="review-rating-@rating" title="@rating sao">★</label>
+            }
+          </fieldset>
           <label for="review-content">Nội dung</label>
           <textarea id="review-content" name="content" rows="4" maxlength="2000" required placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+          @* <label for="review-image">Ảnh đính kèm (không bắt buộc)</label>
+          <input id="review-image" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" /> *@
           <button type="submit" class="btn-primary">Gửi đánh giá</button>
-          <small>Đánh giá sẽ hiển thị sau khi được quản trị viên duyệt.</small>
+          <small>Đánh giá sẽ được hiển thị ngay lập tức sau khi gửi.</small>
         </form>
       }
-      else if (!User.Identity?.IsAuthenticated == true)
+      else
       {
-        <p class="room-review-login"><a href="/dang-nhap?returnUrl=%2Fphong%2F@(Model.Id)%23reviews">Đăng nhập tài khoản người thuê</a> để gửi đánh giá.</p>
+        <p class="room-review-login">
+          <a href="/dang-nhap?returnUrl=%2Fphong%2F@(Model.Id)%23reviews">Đăng nhập</a>
+          hoặc <a href="/dang-ky">tạo tài khoản</a> để gửi đánh giá.
+        </p>
       }
     </section>
 
@@ -222,3 +277,70 @@
     }
   </div>
 </main>
+
+@section Scripts {
+  <script>
+    async function handleDeposit(roomId) {
+        if (!confirm('Bạn sẽ được chuyển hướng đến cổng thanh toán VNPay để đặt cọc 500,000đ. Bạn có chắc chắn?')) return;
+
+        const mockEnabled = @allowMockDeposit.ToString().ToLowerInvariant();
+        const paymentTab = mockEnabled ? window.open('about:blank', '_blank') : null;
+        if (mockEnabled && !paymentTab) {
+            alert('Please allow pop-ups so the test payment and demo button can stay open side by side.');
+            return;
+        }
+        const btn = document.getElementById('btn-deposit');
+        btn.disabled = true;
+        btn.textContent = 'Đang khởi tạo...';
+
+        try {
+            const response = await fetch('/Payment/CreateDeposit?roomId=' + roomId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            });
+
+            if (response.redirected) {
+                if (paymentTab) paymentTab.close();
+                window.location.href = response.url;
+                return;
+            }
+
+            if (!(response.headers.get('content-type') || '').includes('application/json')) {
+                if (paymentTab) paymentTab.close();
+                btn.disabled = false;
+                btn.textContent = 'Đặt cọc giữ chỗ';
+                alert('Phiên đăng nhập trên địa chỉ tunnel chưa hợp lệ. Hãy đăng nhập lại rồi thử thanh toán.');
+                return;
+            }
+
+            const result = await response.json();
+            if (response.ok && result.url) {
+                if (paymentTab) {
+                    paymentTab.location.href = result.url;
+                    const panel = document.getElementById('mock-deposit-panel');
+                    const form = document.getElementById('mock-deposit-form');
+                    if (panel && form) {
+                        form.action = '/Payment/MockConfirm/' + result.depositId;
+                        panel.hidden = false;
+                    }
+                } else {
+                    window.location.href = result.url;
+                }
+            } else {
+                if (paymentTab) paymentTab.close();
+                btn.disabled = false;
+                btn.textContent = 'Đặt cọc giữ chỗ';
+                alert(result.message || 'Không thể tạo giao dịch thanh toán. Vui lòng thử lại.');
+            }
+        } catch (e) {
+            if (paymentTab) paymentTab.close();
+            btn.disabled = false;
+            btn.textContent = 'Đặt cọc giữ chỗ';
+            alert('Không thể kết nối đến máy chủ. Vui lòng thử lại.');
+        }
+    }
+  </script>
+  @* Script cho AJAX nếu cần, hiện tại dùng Form POST truyền thống cho đơn giản *@
+}

@@ -91,6 +91,18 @@ button { cursor: pointer; }
 .nav-account-menu form { margin: 0; }
 .nav-notifications { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: #fff; font-size: 1.25rem; }
 .nav-notifications:hover { background: rgba(255,255,255,.1); }
+.notification-dropdown { position: relative; flex: 0 0 auto; }
+.notification-dropdown > summary { position: relative; cursor: pointer; list-style: none; }
+.notification-dropdown > summary::-webkit-details-marker { display: none; }
+.notification-count { position: absolute; top: -7px; right: -7px; display: grid; min-width: 19px; height: 19px; padding: 0 4px; place-items: center; border: 2px solid #fff; border-radius: 999px; background: #dc2626; color: #fff; font-size: .62rem; font-weight: 800; line-height: 1; }
+.notification-menu { position: absolute; z-index: 1200; top: calc(100% + 10px); right: 0; width: min(290px, calc(100vw - 24px)); padding: 8px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 14px 36px #0f172a24; color: #1e293b; }
+.notification-menu-title { display: block; padding: 9px 10px; color: #1e293b; font-size: .82rem; }
+.notification-menu > a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border-radius: 8px; color: #334155; font-size: .78rem; font-weight: 600; }
+.notification-menu > a:hover { background: #f1f5f9; }
+.notification-menu-count { display: grid; min-width: 23px; height: 23px; padding: 0 5px; place-items: center; border-radius: 999px; background: #fee2e2; color: #b91c1c; font-size: .68rem; font-weight: 800; }
+.notification-empty { display: block; padding: 10px; color: #64748b; font-size: .76rem; }
+.nav-notification-dropdown .notification-menu { background: #fff; }
+.admin-notification-dropdown .notification-menu { top: calc(100% + 8px); }
 .btn-primary, .btn-ghost, .btn-outline-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; border-radius: 12px; padding: 0 20px; font-weight: 700; border: 1px solid transparent; transition: 0.22s ease; }
 .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, #ff8c42 100%); color: white; box-shadow: 0 18px 32px rgba(255, 107, 53, 0.28); }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 24px 38px rgba(255, 107, 53, 0.38); }
@@ -706,6 +718,10 @@ button { cursor: pointer; }
 .room-reviews-heading h2 { margin: 0; }
 .room-reviews-heading p { margin: 4px 0 0; color: var(--muted); font-size: .88rem; }
 .room-review-count { color: var(--muted); font-size: .82rem; font-weight: 700; }
+.room-review-summary { display: flex; align-items: baseline; gap: 10px; }
+.room-review-summary > strong { color: #d99016; font-size: 1.15rem; }
+.room-review-image-link { display: inline-block; margin-top: 10px; }
+.room-review-image { display: block; max-width: min(100%, 320px); max-height: 240px; border-radius: 10px; object-fit: cover; }
 .room-review-list { display: grid; gap: 12px; margin-top: 16px; }
 .room-review-item { padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: #fbfcfe; }
 .room-review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -714,9 +730,20 @@ button { cursor: pointer; }
 .room-review-empty { margin: 16px 0; color: var(--muted); }
 .room-review-form { display: grid; gap: 9px; max-width: 620px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
 .room-review-form h3 { margin: 0 0 4px; }
+.room-review-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; margin: 0; padding: 0; border: 0; }
+.room-review-rating legend { float: left; width: 100%; margin-bottom: 4px; font-weight: 600; }
+.room-review-rating input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.room-review-rating label { color: #cbd5e1; cursor: pointer; font-size: 1.8rem; line-height: 1; }
+.room-review-rating label:hover,
+.room-review-rating label:hover ~ label,
+.room-review-rating input:checked ~ label { color: #d99016; }
+.room-review-rating input:focus-visible + label { outline: 2px solid var(--primary-strong); outline-offset: 2px; }
 .room-review-form select,
 .room-review-form textarea { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text); }
 .room-review-form textarea { resize: vertical; }
+.room-review-form input[type="file"] { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--text); }
+.room-review-form button:disabled { opacity: .65; cursor: wait; }
+.room-review-form-message { margin: 0; color: var(--primary-strong); }
 .room-review-form small { color: var(--muted); }
 .room-review-login { margin: 16px 0 0; color: var(--muted); }
 .room-review-login a { color: var(--primary-strong); font-weight: 700; }

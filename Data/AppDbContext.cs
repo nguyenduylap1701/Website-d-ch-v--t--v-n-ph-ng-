@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<RentalContract> RentalContracts => Set<RentalContract>();
     public DbSet<UtilityBill> UtilityBills => Set<UtilityBill>();
     public DbSet<RepairRequest> RepairRequests => Set<RepairRequest>();
+    public DbSet<RoomDeposit> RoomDeposits => Set<RoomDeposit>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -73,6 +74,15 @@ public class AppDbContext : DbContext
             e.HasOne<AppUser>().WithMany().HasForeignKey(request => request.OwnerId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<Room>().WithMany().HasForeignKey(request => request.RoomId).OnDelete(DeleteBehavior.NoAction);
             e.HasIndex(request => new { request.OwnerId, request.Status, request.CreatedAt });
+        });
+
+        b.Entity<RoomDeposit>(e =>
+        {
+            e.HasOne(d => d.Room).WithMany().HasForeignKey(d => d.RoomId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne(d => d.Tenant).WithMany().HasForeignKey(d => d.TenantId).OnDelete(DeleteBehavior.NoAction);
+            e.HasIndex(d => new { d.RoomId, d.Status });
+            e.HasIndex(d => d.TransactionCode).IsUnique();
+            e.HasIndex(d => d.VnPayTransactionId).IsUnique().HasFilter("[VnPayTransactionId] IS NOT NULL");
         });
 
         var seedDate = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);

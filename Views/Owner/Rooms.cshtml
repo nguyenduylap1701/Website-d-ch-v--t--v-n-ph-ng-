@@ -18,7 +18,7 @@
     else
     {
       <div class="admin-table-scroll"><table class="admin-table admin-management-table">
-        <thead><tr><th>TIN ĐĂNG</th><th>ĐỊA CHỈ</th><th>GIÁ THUÊ</th><th>TRẠNG THÁI</th><th>NGÀY ĐĂNG</th><th></th></tr></thead>
+        <thead><tr><th>TIN ĐĂNG</th><th>ĐỊA CHỈ</th><th>GIÁ THUÊ</th><th>TRẠNG THÁI TIN</th><th>PHÁP LÝ</th><th>NGÀY ĐĂNG</th><th>THAO TÁC</th></tr></thead>
         <tbody>@foreach (var room in Model)
         {
           <tr>
@@ -26,8 +26,21 @@
             <td>@room.Address<span class="admin-subtext">@room.District</span></td>
             <td>@room.Price.ToString("N0") đ/tháng</td>
             <td><span class="admin-status @(room.Status == TroTot.Web.Models.RoomStatus.Approved ? "" : "pending")">@(room.Status == TroTot.Web.Models.RoomStatus.Approved ? "Đang hiển thị" : room.Status == TroTot.Web.Models.RoomStatus.Pending ? "Chờ duyệt" : "Bị từ chối")</span></td>
+            <td><span class="admin-status @(room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Approved ? "" : room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Rejected ? "inactive" : "pending")">@(room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Approved ? "Đã xác minh" : room.LegalStatus == TroTot.Web.Models.LegalVerificationStatus.Rejected ? "Cần bổ sung" : "Chờ xác minh")</span></td>
             <td>@room.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
-            <td>@if (room.Status == TroTot.Web.Models.RoomStatus.Approved) { <a class="admin-action-button" href="/phong/@room.Id">Xem tin</a> }</td>
+            <td>
+              <div class="admin-row-actions">
+                <a class="admin-action-button primary" href="/chu-tro/phong/@room.Id/sua">Sửa tin</a>
+                @if (room.Status == TroTot.Web.Models.RoomStatus.Approved)
+                {
+                  <a class="admin-action-button" href="/phong/@room.Id">Xem tin</a>
+                }
+                <form method="post" action="/chu-tro/phong/@room.Id/xoa" onsubmit="return confirm('Bạn có chắc muốn xóa tin &quot;@room.Title&quot;? Thao tác này không thể hoàn tác.');">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="admin-action-button danger">Xóa tin</button>
+                </form>
+              </div>
+            </td>
           </tr>
         }</tbody>
       </table></div>

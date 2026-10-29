@@ -1,0 +1,29 @@
+@model TroTot.Web.Models.RoomDeposit
+@using System.Globalization
+@{
+    ViewData["Title"] = "Biên nhận đặt cọc";
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+<main class="container" style="max-width: 760px; padding: 48px 16px;">
+    <section class="summary-card" style="padding: 32px;">
+        @if (Model.ReceiptCode?.StartsWith("DEMO-", StringComparison.Ordinal) == true)
+        {
+            <p style="color: #b45309; font-weight: 700;">DEMO SIMULATION - no bank or VNPay payment was verified.</p>
+        }
+
+        <p style="color: #15803d; font-weight: 700;">Thanh toán thành công</p>
+        <h1>Biên nhận đặt cọc</h1>
+        <p>Mã biên nhận: <strong>@Model.ReceiptCode</strong></p>
+        <dl style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px;">
+            <dt>Phòng</dt><dd>@Model.Room?.Title</dd>
+            <dt>Địa chỉ</dt><dd>@Model.Room?.Address, @Model.Room?.District</dd>
+            <dt>Số tiền</dt><dd>@Model.Amount.ToString("N0", vi) đ</dd>
+            <dt>Mã giao dịch VNPay</dt><dd>@(Model.VnPayTransactionId ?? "—")</dd>
+            <dt>Thời gian thanh toán</dt><dd>@(Model.PaidAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</dd>
+            <dt>Người thuê</dt><dd>@Model.Tenant?.FullName</dd>
+        </dl>
+        <a class="btn-primary" href="/">Về trang chủ</a>
+        <button class="btn-secondary" type="button" onclick="window.print()">In biên nhận</button>
+    </section>
+</main>

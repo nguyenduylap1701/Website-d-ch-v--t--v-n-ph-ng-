@@ -11,7 +11,9 @@ namespace TroTot.Web.Controllers;
 public class HomeController : Controller
 {
     private static readonly string[] AllowedImageExt = { ".jpg", ".jpeg", ".png", ".webp" };
+    private static readonly string[] AllowedLegalDocumentExt = { ".jpg", ".jpeg", ".png", ".webp", ".pdf" };
     private const long MaxImageBytes = 5 * 1024 * 1024;
+    private const long MaxLegalDocumentBytes = 10 * 1024 * 1024;
 
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _env;
@@ -21,8 +23,6 @@ public class HomeController : Controller
         _db = db;
         _env = env;
     }
-
-    // ================= GET pages =================
     [HttpGet("")]
     [HttpGet("index")]
     public IActionResult Index() => View();
@@ -37,7 +37,20 @@ public class HomeController : Controller
         long? maxPrice,
         string? priceRange,
         bool? verified,
-        string? sort)
+        string? sort,
+        int[]? recommendedRoomIds,
+        int[]? advisorScores,
+        double[]? advisorDistances,
+        double[]? advisorRoomLats,
+        double[]? advisorRoomLons,
+        double? advisorLat,
+        double? advisorLon,
+        int? advisorRadiusKm,
+        string? advisorPlace,
+        string? advisorTransport,
+        bool? advisorDistanceUnverified,
+        int? advisorElectricityKwh,
+        int? advisorOccupants)
     {
         (minPrice, maxPrice) = priceRange switch
         {
@@ -52,6 +65,17 @@ public class HomeController : Controller
             .Include(r => r.Images)
             .Include(r => r.Owner)
             .AsQueryable();
+
+        var advisorRoomOrder = (recommendedRoomIds ?? Array.Empty<int>())
+            .Where(id => id > 0)
+            .Distinct()
+            .Take(3)
+            .ToArray();
+        var isAdvisorResults = advisorRoomOrder.Length > 0;
+        if (isAdvisorResults)
+        {
+            query = query.Where(room => advisorRoomOrder.Contains(room.Id));
+        }
 
         if (!string.IsNullOrWhiteSpace(keyword))
         {
@@ -97,18 +121,29 @@ public class HomeController : Controller
             query = query.Where(r => r.IsVerified);
         }
 
-        query = sort switch
+        if (!isAdvisorResults)
         {
-            "price-asc" => query.OrderBy(r => r.Price),
-            "price-desc" => query.OrderByDescending(r => r.Price),
-            "newest" => query.OrderByDescending(r => r.CreatedAt),
-            "rating" => query.OrderByDescending(r => r.IsVerified).ThenByDescending(r => r.CreatedAt),
-            _ => query.OrderByDescending(r => r.IsVerified).ThenByDescending(r => r.CreatedAt)
-        };
+            query = sort switch
+            {
+                "price-asc" => query.OrderBy(r => r.Price),
+                "price-desc" => query.OrderByDescending(r => r.Price),
+                "newest" => query.OrderByDescending(r => r.CreatedAt),
+                "rating" => query.OrderByDescending(r => r.IsVerified).ThenByDescending(r => r.CreatedAt),
+                _ => query.OrderByDescending(r => r.IsVerified).ThenByDescending(r => r.CreatedAt)
+            };
+        }
 
         var rooms = await query
             .Where(r => r.Status == RoomStatus.Approved)
             .ToListAsync();
+        if (isAdvisorResults)
+        {
+            var roomById = rooms.ToDictionary(room => room.Id);
+            rooms = advisorRoomOrder
+                .Where(roomById.ContainsKey)
+                .Select(id => roomById[id])
+                .ToList();
+        }
 
         ViewBag.Districts = await _db.Rooms
             .Where(r => r.Status == RoomStatus.Approved)
@@ -125,7 +160,44 @@ public class HomeController : Controller
         ViewBag.PriceRange = priceRange;
         ViewBag.VerifiedOnly = verified == true;
         ViewBag.Sort = sort;
-
+        ViewBag.IsAdvisorResults = isAdvisorResults;
+        ViewBag.AdvisorPlace = advisorPlace;
+        ViewBag.AdvisorDistanceUnverified = advisorDistanceUnverified == true;
+        ViewBag.AdvisorRadiusKm = advisorRadiusKm is >= 1 and <= 15 ? advisorRadiusKm : null;
+        ViewBag.AdvisorTransport = advisorTransport;
+        ViewBag.AdvisorElectricityKwh = advisorElectricityKwh is >= 0 and <= 200 ? advisorElectricityKwh : null;
+        ViewBag.AdvisorOccupants = advisorOccupants is >= 1 and <= 6 ? advisorOccupants : null;
+        ViewBag.AdvisorLatitude = advisorLat is >= -90 and <= 90 ? advisorLat : null;
+        ViewBag.AdvisorLongitude = advisorLon is >= -180 and <= 180 ? advisorLon : null;
+        var advisorRoomDetails = advisorRoomOrder
+            .Select((id, index) => new
+            {
+                RoomId = id,
+                Score = advisorScores is { Length: > 0 } && index < advisorScores.Length
+                    ? Math.Clamp(advisorScores[index], 0, 100)
+                    : 0,
+                DistanceKm = advisorDistances is { Length: > 0 } && index < advisorDistances.Length
+                    ? Math.Clamp(advisorDistances[index], 0, 1000)
+                    : 0
+            })
+            .ToList();
+        ViewBag.AdvisorRoomScores = advisorRoomDetails.ToDictionary(item => item.RoomId, item => item.Score);
+        ViewBag.AdvisorRoomDistances = advisorRoomDetails.ToDictionary(item => item.RoomId, item => item.DistanceKm);
+        ViewBag.AdvisorRoomLocations = advisorRoomOrder
+            .Select((id, index) => new
+            {
+                RoomId = id,
+                Latitude = advisorRoomLats is { Length: > 0 } && index < advisorRoomLats.Length &&
+                    advisorRoomLats[index] is >= -90 and <= 90
+                    ? advisorRoomLats[index]
+                    : (double?)null,
+                Longitude = advisorRoomLons is { Length: > 0 } && index < advisorRoomLons.Length &&
+                    advisorRoomLons[index] is >= -180 and <= 180
+                    ? advisorRoomLons[index]
+                    : (double?)null
+            })
+            .Where(item => item.Latitude.HasValue && item.Longitude.HasValue)
+            .ToDictionary(item => item.RoomId, item => new[] { item.Latitude!.Value, item.Longitude!.Value });
         return View(rooms);
     }
 
@@ -150,12 +222,14 @@ public class HomeController : Controller
             .ToListAsync();
 
         ViewBag.RelatedRooms = relatedRooms;
-        ViewBag.RoomReviews = await _db.RoomReviews
+        var roomReviews = await _db.RoomReviews
             .AsNoTracking()
             .Include(review => review.User)
             .Where(review => review.RoomId == id && review.IsPublished)
             .OrderByDescending(review => review.CreatedAt)
             .ToListAsync();
+        ViewBag.RoomReviews = roomReviews;
+        ViewBag.RoomAverageRating = roomReviews.Count == 0 ? 0d : roomReviews.Average(review => review.Rating);
         return View(room);
     }
 
@@ -246,9 +320,6 @@ public class HomeController : Controller
     [HttpGet("dang-tin")]
     public IActionResult DangTin() => View();
 
-    // ================= POST actions =================
-
-    // Yêu cầu tư vấn (trang Tư vấn + form ở trang chủ)
     [HttpPost("tu-van")]
     public async Task<IActionResult> TuVan(ConsultationForm form, string? returnUrl)
     {
@@ -271,8 +342,6 @@ public class HomeController : Controller
         TempData["Success"] = $"Cảm ơn {form.Name}! Chuyên viên sẽ liên hệ số {form.Phone} trong 30 phút.";
         return Back(returnUrl, "/tu-van");
     }
-
-    // Đặt câu hỏi cho cộng đồng
     [HttpPost("hoi-dap")]
     public async Task<IActionResult> HoiDap(QuestionForm form)
     {
@@ -282,15 +351,13 @@ public class HomeController : Controller
         {
             Topic = form.Topic,
             Content = form.Content.Trim(),
-            IsPublished = true   // đổi thành false nếu muốn admin duyệt trước khi hiển thị
+            IsPublished = true   
         });
         await _db.SaveChangesAsync();
 
         TempData["Success"] = "Đã đăng câu hỏi! Chuyên gia TroTot sẽ giải đáp sớm.";
         return Redirect("/tu-van");
     }
-
-    // Đặt lịch xem phòng (modal ở trang chủ và trang tìm phòng)
     [HttpPost("dat-lich-xem")]
     public async Task<IActionResult> DatLichXem(ViewingForm form, string? returnUrl)
     {
@@ -319,7 +386,7 @@ public class HomeController : Controller
         return Back(returnUrl, "/rooms");
     }
 
-    [Authorize(Roles = nameof(UserRole.Tenant))]
+    [Authorize]
     [HttpPost("phong/{id:int}/danh-gia")]
     public async Task<IActionResult> SubmitRoomReview(int id, int rating, string? content)
     {
@@ -334,20 +401,29 @@ public class HomeController : Controller
         }
 
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        // Kiểm tra hợp đồng thuê
+        var hasContract = await _db.RentalContracts.AnyAsync(c =>
+            c.RoomId == id && c.TenantId == userId);
+
+        if (!hasContract)
+        {
+            TempData["Error"] = "Bạn chỉ có thể đánh giá phòng mà bạn đã hoặc đang thuê (yêu cầu có hợp đồng trên hệ thống).";
+            return Redirect($"/phong/{id}#reviews");
+        }
+
         _db.RoomReviews.Add(new RoomReview
         {
             UserId = userId,
             RoomId = id,
             Rating = rating,
             Content = content.Trim(),
-            IsPublished = false
+            IsPublished = true // Tự động duyệt vì đã có hợp đồng xác minh
         });
         await _db.SaveChangesAsync();
-        TempData["Success"] = "Cảm ơn bạn đã đánh giá. Nội dung sẽ hiển thị sau khi được quản trị viên duyệt.";
+        TempData["Success"] = "Cảm ơn bạn đã đánh giá! Đánh giá của bạn đã được hiển thị.";
         return Redirect($"/phong/{id}#reviews");
     }
-
-    // Liên hệ hỗ trợ
     [HttpPost("lien-he")]
     public async Task<IActionResult> LienHe(ContactForm form)
     {
@@ -364,13 +440,31 @@ public class HomeController : Controller
         TempData["Success"] = "Cảm ơn bạn! Tin nhắn phản hồi đã được gửi thành công.";
         return Redirect("/lien-he");
     }
-
-    // Đăng tin phòng trọ (cần đăng nhập)
     [Authorize(Roles = $"{nameof(UserRole.Owner)},{nameof(UserRole.Admin)}")]
+    [Authorize(Roles = nameof(UserRole.Owner))]
     [HttpPost("dang-tin")]
+    [RequestSizeLimit(150_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 150_000_000)]
     public async Task<IActionResult> DangTin(RoomForm form)
     {
         if (!ModelState.IsValid) return Fail(null, "/dang-tin");
+
+        var legalDocuments = new[]
+        {
+            (form.IdentityFront!, "CCCD mặt trước"),
+            (form.IdentityBack!, "CCCD mặt sau"),
+            (form.PropertyDocument!, "Sổ đỏ/hợp đồng thuê lại"),
+            (form.RoomLegalDocument!, "Giấy tờ phòng thuê")
+        };
+        foreach (var (document, label) in legalDocuments)
+        {
+            var ext = Path.GetExtension(document.FileName).ToLowerInvariant();
+            if (!AllowedLegalDocumentExt.Contains(ext) || document.Length > MaxLegalDocumentBytes)
+            {
+                TempData["Error"] = $"{label}: chỉ chấp nhận JPG/PNG/WEBP/PDF, tối đa 10MB mỗi tệp.";
+                return Redirect("/dang-tin");
+            }
+        }
 
         var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -410,8 +504,14 @@ public class HomeController : Controller
             Amenities = form.Amenities is { Count: > 0 } ? string.Join(",", form.Amenities) : "",
             Package = form.Package,
             Status = RoomStatus.Pending,
+            LegalStatus = LegalVerificationStatus.Pending,
             OwnerId = ownerId
         };
+
+        room.IdentityFrontDocument = await SaveLegalDocumentAsync(form.IdentityFront!);
+        room.IdentityBackDocument = await SaveLegalDocumentAsync(form.IdentityBack!);
+        room.PropertyDocument = await SaveLegalDocumentAsync(form.PropertyDocument!);
+        room.RoomLegalDocument = await SaveLegalDocumentAsync(form.RoomLegalDocument!);
 
         if (images.Count > 0)
         {
@@ -436,6 +536,19 @@ public class HomeController : Controller
         return Redirect("/");
     }
 
+    private async Task<string> SaveLegalDocumentAsync(IFormFile document)
+    {
+        var extension = Path.GetExtension(document.FileName).ToLowerInvariant();
+        var fileName = $"{Guid.NewGuid():N}{extension}";
+        var directory = Path.Combine(_env.ContentRootPath, "App_Data", "verification-documents");
+        Directory.CreateDirectory(directory);
+
+        var path = Path.Combine(directory, fileName);
+        await using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        await document.CopyToAsync(stream, HttpContext.RequestAborted);
+        return fileName;
+    }
+
     [Authorize(Roles = nameof(UserRole.Admin))]
     [HttpPost("quan-tri/phong/{id:int}/duyet")]
     public async Task<IActionResult> ApproveRoom(int id)
@@ -444,6 +557,7 @@ public class HomeController : Controller
         if (room is null) return NotFound();
 
         room.Status = RoomStatus.Approved;
+        room.HasUnreadOwnerNotification = true;
         await _db.SaveChangesAsync();
         TempData["Success"] = $"Đã duyệt tin đăng \"{room.Title}\".";
         return Redirect("/quan-ly");
@@ -457,12 +571,11 @@ public class HomeController : Controller
         if (room is null) return NotFound();
 
         room.Status = RoomStatus.Rejected;
+        room.HasUnreadOwnerNotification = true;
         await _db.SaveChangesAsync();
         TempData["Success"] = $"Đã từ chối tin đăng \"{room.Title}\".";
         return Redirect("/quan-ly");
     }
-
-    // ================= helpers =================
     private IActionResult Back(string? returnUrl, string fallback)
         => Url.IsLocalUrl(returnUrl) ? LocalRedirect(returnUrl!) : Redirect(fallback);
 

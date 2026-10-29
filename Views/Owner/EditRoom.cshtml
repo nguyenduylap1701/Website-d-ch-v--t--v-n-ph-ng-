@@ -1,0 +1,155 @@
+@model TroTot.Web.ViewModels.EditRoomForm
+@{
+    ViewData["Title"] = "Sửa tin đăng";
+    ViewData["Active"] = "rooms";
+    ViewData["DashboardLayout"] = true;
+}
+
+<main class="admin-management">
+  <header class="admin-management-heading">
+    <div>
+      <span class="admin-kicker">QUẢN LÝ TÀI SẢN</span>
+      <h1>Sửa tin đăng</h1>
+      <p>Sau khi lưu, tin sẽ chuyển về trạng thái chờ admin duyệt lại.</p>
+    </div>
+    <a class="admin-action-button" href="/chu-tro/phong">← Quay lại danh sách</a>
+  </header>
+
+  <form method="post" enctype="multipart/form-data" class="admin-data-card" style="padding:24px;">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" class="admin-empty" style="color:#b91c1c;"></div>
+
+    <section style="margin-bottom:26px;">
+      <h2>Thông tin phòng</h2>
+      <div class="form-row">
+        <div class="form-field">
+          <label asp-for="Title">Tiêu đề tin đăng *</label>
+          <input asp-for="Title" class="form-input" />
+          <span asp-validation-for="Title"></span>
+        </div>
+        <div class="form-field">
+          <label asp-for="RoomType">Loại phòng *</label>
+          <select asp-for="RoomType" class="form-input">
+            <option value="single">Phòng đơn</option>
+            <option value="shared">Ở ghép</option>
+            <option value="mini">Căn hộ mini</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label asp-for="Area">Diện tích (m²) *</label>
+          <input asp-for="Area" type="number" class="form-input" />
+        </div>
+        <div class="form-field">
+          <label asp-for="Price">Giá thuê (đ/tháng) *</label>
+          <input asp-for="Price" type="number" class="form-input" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label asp-for="Address">Địa chỉ *</label>
+        <input asp-for="Address" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label asp-for="District">Quận/huyện *</label>
+        <input asp-for="District" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label asp-for="Description">Mô tả</label>
+        <textarea asp-for="Description" rows="5" class="form-input"></textarea>
+      </div>
+      <div class="form-field">
+        <label asp-for="Rules">Nội quy</label>
+        <textarea asp-for="Rules" rows="3" class="form-input"></textarea>
+      </div>
+      <div class="form-field">
+        <label asp-for="VideoUrl">Đường dẫn video</label>
+        <input asp-for="VideoUrl" type="url" class="form-input" />
+      </div>
+    </section>
+
+    <section style="margin-bottom:26px;">
+      <h2>Giá và tiện ích</h2>
+      <div class="form-row">
+        <div class="form-field">
+          <label asp-for="DepositMonths">Tiền cọc (số tháng)</label>
+          <input asp-for="DepositMonths" type="number" min="0" class="form-input" />
+        </div>
+        <div class="form-field">
+          <label asp-for="Package">Gói tin</label>
+          <select asp-for="Package" class="form-input">
+            <option value="free">Miễn phí</option>
+            <option value="basic">Cơ bản</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label asp-for="ElectricPrice">Giá điện</label><input asp-for="ElectricPrice" type="number" class="form-input" /></div>
+        <div class="form-field"><label asp-for="WaterPrice">Giá nước</label><input asp-for="WaterPrice" type="number" class="form-input" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label asp-for="InternetFee">Phí internet</label><input asp-for="InternetFee" type="number" class="form-input" /></div>
+        <div class="form-field"><label asp-for="ParkingFee">Phí gửi xe</label><input asp-for="ParkingFee" type="number" class="form-input" /></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
+        @foreach (var amenity in new[] { "Máy lạnh", "Wifi", "Gác lửng", "Chỗ để xe", "Giờ giấc tự do", "Nuôi thú cưng", "Bếp nấu ăn", "Ban công", "Máy giặt", "Tủ lạnh", "Camera an ninh", "Thang máy" })
+        {
+          <label><input type="checkbox" name="Amenities" value="@amenity" checked="@(Model.Amenities?.Contains(amenity) == true)" /> @amenity</label>
+        }
+      </div>
+    </section>
+
+    <section style="margin-bottom:26px;">
+      <h2>Ảnh phòng</h2>
+      @if (Model.ViewRoomImages.Count == 0)
+      {
+        <p>Tin hiện chưa có ảnh phòng.</p>
+      }
+      else
+      {
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+          @foreach (var image in Model.ViewRoomImages)
+          {
+            <label style="display:block;padding:8px;border:1px solid #e2e8f0;border-radius:8px;">
+              <img src="@image.Path" alt="Ảnh phòng" style="width:100%;height:110px;object-fit:cover;border-radius:6px;" />
+              <span style="display:block;margin-top:6px;"><input type="checkbox" name="RemoveImageIds" value="@image.Id" /> Xóa ảnh này @(image.IsPrimary ? "(ảnh đại diện)" : "")</span>
+            </label>
+          }
+        </div>
+      }
+      <div class="form-field">
+        <label asp-for="Images">Thêm ảnh mới (JPG/PNG/WEBP, tối đa 5MB mỗi ảnh)</label>
+        <input asp-for="Images" type="file" accept=".jpg,.jpeg,.png,.webp" multiple class="form-input" />
+      </div>
+    </section>
+
+    <section style="margin-bottom:26px;">
+      <h2>Giấy tờ pháp lý</h2>
+      <p>Không cần tải lại giấy tờ đã có. Nếu thay đổi tài liệu, hãy tải bản mới lên.</p>
+      <div class="form-field">
+        <label asp-for="IdentityFront">CCCD mặt trước @(Model.HasIdentityFront ? "(đã có)" : "(còn thiếu)")</label>
+        <input asp-for="IdentityFront" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label asp-for="IdentityBack">CCCD mặt sau @(Model.HasIdentityBack ? "(đã có)" : "(còn thiếu)")</label>
+        <input asp-for="IdentityBack" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label asp-for="PropertyDocument">Sổ đỏ/hợp đồng thuê lại @(Model.HasPropertyDocument ? "(đã có)" : "(còn thiếu)")</label>
+        <input asp-for="PropertyDocument" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-input" />
+      </div>
+      <div class="form-field">
+        <label asp-for="RoomLegalDocument">Giấy tờ liên quan phòng thuê @(Model.HasRoomLegalDocument ? "(đã có)" : "(còn thiếu)")</label>
+        <input asp-for="RoomLegalDocument" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="form-input" />
+      </div>
+      <label><input asp-for="ConfirmAccuracy" type="checkbox" /> Tôi xác nhận thông tin cập nhật là chính xác.</label>
+      <span asp-validation-for="ConfirmAccuracy"></span>
+    </section>
+
+    <div class="admin-row-actions">
+      <button type="submit" class="admin-action-button primary">Lưu thay đổi</button>
+      <a class="admin-action-button" href="/chu-tro/phong">Hủy</a>
+    </div>
+  </form>
+</main>

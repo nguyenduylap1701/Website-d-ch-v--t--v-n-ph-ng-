@@ -188,7 +188,7 @@ window.initializeTroTotPage = async () => {
           <div class="room-meta">
             <span>📍 ${htmlEncode(room.district)}</span>
             <span>📐 ${htmlEncode(room.area)}m²</span>
-            <span>⭐ ${room.rating || 4.8}</span>
+            <span>⭐ ${room.rating ? Number(room.rating).toFixed(1) : 'Chưa đánh giá'}</span>
           </div>
           <div class="room-actions">
             <a class="btn-primary" href="/phong/${encodeURIComponent(room.id)}#booking">Đặt lịch</a>

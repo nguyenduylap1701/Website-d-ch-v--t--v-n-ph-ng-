@@ -1,6 +1,6 @@
 @{
     ViewData["Title"] = "Đăng Tin Phòng Trọ | TroTot.vn";
-    ViewData["Description"] = "Đăng tin phòng trọ miễn phí, tiếp cận hàng nghìn người thuê tại TP.HCM.";
+    ViewData["Description"] = "Đăng tin phòng trọ miễn phí, tiếp cận hàng nghìn người thuê tại TP.Hà Nội";
     ViewData["Icon"] = "🏠";
     ViewData["Active"] = "dangtin";
     ViewData["NavScrolled"] = false;
@@ -210,9 +210,36 @@
     <!-- Step 4: Preview & Submit -->
     <div id="postStep4" class="post-step-content" style="display:none;">
       <div class="post-card">
-        <h2 class="post-card-title">✅ Xem Trước & Đăng Tin</h2>
+        <h2 class="post-card-title">✅ Xác Minh Pháp Lý & Đăng Tin</h2>
         <div id="postPreview" style="margin-bottom:24px;"></div>
         <input type="hidden" id="postPackage" name="Package" value="free" />
+
+        <section style="margin-bottom:24px;padding:20px;border:1px solid rgba(255,255,255,0.12);border-radius:14px;background:rgba(15,23,42,0.55);">
+          <h3 style="margin:0 0 8px;color:#f1f5f9;">Hồ sơ pháp lý chủ trọ và phòng thuê</h3>
+          <p style="margin:0 0 18px;color:#94a3b8;font-size:13px;">Tài liệu chỉ admin được phép xem để xác minh. Chấp nhận JPG, PNG, WEBP hoặc PDF, tối đa 10MB mỗi tệp.</p>
+          <div style="display:grid;gap:16px;">
+            <div class="form-field">
+              <label for="identityFront">Ảnh CCCD mặt trước *</label>
+              <input id="identityFront" type="file" name="IdentityFront" accept=".jpg,.jpeg,.png,.webp,.pdf" required class="form-input" />
+            </div>
+            <div class="form-field">
+              <label for="identityBack">Ảnh CCCD mặt sau *</label>
+              <input id="identityBack" type="file" name="IdentityBack" accept=".jpg,.jpeg,.png,.webp,.pdf" required class="form-input" />
+            </div>
+            <div class="form-field">
+              <label for="propertyDocument">Sổ đỏ hoặc hợp đồng thuê lại *</label>
+              <input id="propertyDocument" type="file" name="PropertyDocument" accept=".jpg,.jpeg,.png,.webp,.pdf" required class="form-input" />
+            </div>
+            <div class="form-field">
+              <label for="roomLegalDocument">Giấy tờ liên quan đến phòng thuê *</label>
+              <input id="roomLegalDocument" type="file" name="RoomLegalDocument" accept=".jpg,.jpeg,.png,.webp,.pdf" required class="form-input" />
+            </div>
+            <label style="display:flex;align-items:flex-start;gap:10px;color:#cbd5e1;font-size:13px;">
+              <input type="checkbox" name="LegalDeclaration" value="true" required style="margin-top:3px;" />
+              <span>Tôi xác nhận các thông tin đăng tin và giấy tờ pháp lý cung cấp là chính xác, đồng thời đồng ý để TroTot.vn sử dụng chúng cho mục đích xác minh.</span>
+            </label>
+          </div>
+        </section>
 
         <!-- Package selection -->
         <div style="margin-bottom:24px;">

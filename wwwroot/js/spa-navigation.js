@@ -27,8 +27,11 @@
     document.head.querySelectorAll('link[data-spa-stylesheet]').forEach((link) => link.remove());
     nextDocument.head.querySelectorAll('link[rel="stylesheet"]').forEach((source) => {
       const stylesheetUrl = new URL(source.href, window.location.href);
-      if (stylesheetUrl.origin !== window.location.origin ||
-          !stylesheetUrl.pathname.startsWith('/css/')) return;
+      const localStylesheet = stylesheetUrl.origin === window.location.origin &&
+        stylesheetUrl.pathname.startsWith('/css/');
+      const leafletStylesheet = stylesheetUrl.origin === 'https://unpkg.com' &&
+        stylesheetUrl.pathname === '/leaflet@1.9.4/dist/leaflet.css';
+      if (!localStylesheet && !leafletStylesheet) return;
       const link = source.cloneNode(true);
       link.dataset.spaStylesheet = '';
       document.head.appendChild(link);

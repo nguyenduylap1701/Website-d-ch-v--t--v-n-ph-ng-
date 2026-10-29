@@ -1,0 +1,30 @@
+@model TroTot.Web.ViewModels.NotificationBellViewModel
+@{
+    var bellClass = Model.IsDashboard ? "admin-notification-link" : "nav-notifications";
+}
+<details class="notification-dropdown @(Model.IsDashboard ? "admin-notification-dropdown" : "nav-notification-dropdown")">
+  <summary class="@bellClass" aria-label="Thông báo: @Model.TotalCount" title="Thông báo">
+    <span aria-hidden="true">🔔</span>
+    @if (Model.TotalCount > 0)
+    {
+      <span class="notification-count" aria-label="@Model.TotalCount thông báo">@((Model.TotalCount > 99) ? "99+" : Model.TotalCount)</span>
+    }
+  </summary>
+  <div class="notification-menu" role="menu">
+    <strong class="notification-menu-title">Thông báo</strong>
+    @foreach (var item in Model.Items)
+    {
+      <a href="@item.Url" role="menuitem">
+        <span>@item.Label</span>
+        @if (item.Count > 0)
+        {
+          <span class="notification-menu-count">@item.Count</span>
+        }
+      </a>
+    }
+    @if (Model.TotalCount == 0)
+    {
+      <span class="notification-empty">Không có thông báo mới.</span>
+    }
+  </div>
+</details>

@@ -1,0 +1,86 @@
+@model TroTot.Web.Models.Room
+@{
+    ViewData["Title"] = "Chi tiết tin đăng và hồ sơ pháp lý";
+    ViewData["Active"] = "listings";
+    ViewData["DashboardLayout"] = true;
+    var legalStatus = Model.LegalStatus switch
+    {
+        TroTot.Web.Models.LegalVerificationStatus.Approved => "Đã xác minh",
+        TroTot.Web.Models.LegalVerificationStatus.Rejected => "Từ chối",
+        _ => "Chờ xác minh"
+    };
+}
+
+<main class="admin-management">
+  <header class="admin-management-heading">
+    <div>
+      <span class="admin-kicker">KIỂM DUYỆT NỘI DUNG</span>
+      <h1>Hồ sơ chủ trọ và tin đăng</h1>
+      <p>Tiếp nhận ngày @Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <a class="admin-action-button" href="/quan-tri/dang-tin">← Quay lại danh sách</a>
+  </header>
+
+  <section class="admin-data-card" style="padding:24px;margin-bottom:20px;">
+    <div class="admin-management-card-title"><h2>Thông tin chủ trọ</h2></div>
+    <p><strong>Họ tên:</strong> @(Model.Owner?.FullName ?? "—")</p>
+    <p><strong>Email:</strong> @(Model.Owner?.Email ?? "—")</p>
+    <p><strong>Số điện thoại:</strong> @(Model.Owner?.Phone ?? "—")</p>
+  </section>
+
+  <section class="admin-data-card" style="padding:24px;margin-bottom:20px;">
+    <div class="admin-management-card-title"><h2>Hồ sơ xác minh pháp lý</h2><span>@legalStatus</span></div>
+    <p>Tài liệu được lưu riêng tư và chỉ quản trị viên đã đăng nhập mới truy cập được.</p>
+    <ul>
+      <li>CCCD mặt trước: @DocumentLink(Model.IdentityFrontDocument, "cccd-truoc", "Tải tài liệu")</li>
+      <li>CCCD mặt sau: @DocumentLink(Model.IdentityBackDocument, "cccd-sau", "Tải tài liệu")</li>
+      <li>Sổ đỏ/hợp đồng thuê lại: @DocumentLink(Model.PropertyDocument, "giay-to-so-huu", "Tải tài liệu")</li>
+      <li>Giấy tờ liên quan phòng thuê: @DocumentLink(Model.RoomLegalDocument, "giay-to-phong", "Tải tài liệu")</li>
+    </ul>
+    <div class="admin-row-actions" style="margin-top:18px;">
+      <form method="post" action="/quan-tri/dang-tin/@Model.Id/duyet-phap-ly">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="admin-action-button primary">Xác nhận pháp lý</button>
+      </form>
+      <form method="post" action="/quan-tri/dang-tin/@Model.Id/tu-choi-phap-ly">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="admin-action-button danger">Từ chối hồ sơ</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="admin-data-card" style="padding:24px;margin-bottom:20px;">
+    <div class="admin-management-card-title"><h2>Thông tin tin đăng</h2><span>@Model.Status</span></div>
+    <p><strong>Tiêu đề:</strong> @Model.Title</p>
+    <p><strong>Loại phòng:</strong> @Model.RoomType · <strong>Diện tích:</strong> @Model.Area m²</p>
+    <p><strong>Địa chỉ:</strong> @Model.Address, @Model.District</p>
+    <p><strong>Giá thuê:</strong> @Model.Price.ToString("#,##0") đ/tháng · <strong>Tiền cọc:</strong> @Model.DepositMonths tháng</p>
+    <p><strong>Điện:</strong> @Model.ElectricPrice.ToString("#,##0") đ/kWh · <strong>Nước:</strong> @Model.WaterPrice.ToString("#,##0") đ/tháng</p>
+    <p><strong>Internet:</strong> @Model.InternetFee.ToString("#,##0") đ/tháng · <strong>Gửi xe:</strong> @Model.ParkingFee.ToString("#,##0") đ/tháng</p>
+    <p><strong>Tiện nghi:</strong> @(string.IsNullOrWhiteSpace(Model.Amenities) ? "—" : Model.Amenities)</p>
+    <p><strong>Mô tả:</strong> @(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)</p>
+    <p><strong>Nội quy:</strong> @(string.IsNullOrWhiteSpace(Model.Rules) ? "—" : Model.Rules)</p>
+    @if (Model.Images.Count > 0)
+    {
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;">
+        @foreach (var image in Model.Images)
+        {
+          <a href="@image.Path" target="_blank" rel="noopener noreferrer"><img src="@image.Path" alt="Ảnh tin đăng @Model.Title" style="width:160px;height:120px;object-fit:cover;border-radius:8px;" /></a>
+        }
+      </div>
+    }
+  </section>
+</main>
+
+@functions {
+    Microsoft.AspNetCore.Html.IHtmlContent DocumentLink(string? fileName, string documentType, string text)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return new Microsoft.AspNetCore.Html.HtmlString("Chưa tải lên");
+        }
+
+        var url = $"/quan-tri/dang-tin/{Model.Id}/tai-lieu/{documentType}";
+        return new Microsoft.AspNetCore.Html.HtmlString($"<a href=\"{url}\">{text}</a>");
+    }
+}

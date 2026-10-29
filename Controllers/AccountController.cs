@@ -20,8 +20,6 @@ public class AccountController : Controller
         _db = db;
         _hasher = hasher;
     }
-
-    // ---------- Đăng nhập ----------
     [HttpGet("dang-nhap")]
     public IActionResult DangNhap(string? returnUrl = null)
         => View(new LoginViewModel { ReturnUrl = returnUrl });
@@ -62,8 +60,6 @@ public class AccountController : Controller
             ? RedirectToAction("QuanLy", "Home")
             : Redirect("/");
     }
-
-    // ---------- Đăng ký ----------
     [HttpGet("dang-ky")]
     public IActionResult DangKy() => View(new RegisterViewModel());
 
@@ -97,8 +93,6 @@ public class AccountController : Controller
         TempData["Success"] = "Đăng ký thành công! Chào mừng bạn đến với TroTot.vn.";
         return Redirect("/");
     }
-
-    // ---------- Đăng xuất ----------
     [HttpPost("dang-xuat")]
     public async Task<IActionResult> DangXuat()
     {
@@ -106,8 +100,6 @@ public class AccountController : Controller
         TempData["Success"] = "Bạn đã đăng xuất.";
         return Redirect("/");
     }
-
-    // ---------- Helpers ----------
     private async Task SignInAsync(AppUser user, bool isPersistent)
     {
         var claims = new List<Claim>

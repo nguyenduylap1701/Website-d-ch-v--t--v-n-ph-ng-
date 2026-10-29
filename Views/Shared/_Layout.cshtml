@@ -69,10 +69,7 @@
       <div><span class="admin-topbar-eyebrow">@(isAdmin ? "QUẢN TRỊ" : "KHÔNG GIAN CHỦ TRỌ")</span><strong>@(ViewData["Title"] ?? "Tổng quan")</strong></div>
       <div class="admin-topbar-actions">
         <span class="admin-date">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
-        @if (!isAdmin)
-        {
-          <a class="admin-notification-link" href="/quan-ly#requests" aria-label="Thông báo yêu cầu xem phòng" title="Yêu cầu xem phòng">🔔</a>
-        }
+        @await Component.InvokeAsync("NotificationBell", new { isDashboard = true })
         <a class="admin-home-link" href="/" data-no-spa>← Về trang chủ</a>
         @if (isAdmin)
         {
@@ -149,9 +146,12 @@ else
       <li><a href="/lien-he" class="nav-link @Act("lienhe")">Liên Hệ</a></li>
     </ul>
     <div class="nav-actions">
+      @if (isOwner || isAdmin)
+      {
+        @await Component.InvokeAsync("NotificationBell", new { isDashboard = false })
+      }
       @if (isOwner)
       {
-        <a class="nav-notifications" href="/quan-ly#requests" aria-label="Thông báo yêu cầu xem phòng" title="Yêu cầu xem phòng">🔔</a>
         <details class="nav-dropdown nav-account-dropdown">
           <summary class="nav-account-summary">
             <span class="nav-account-avatar" aria-hidden="true">@(User.Identity?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "C")</span>

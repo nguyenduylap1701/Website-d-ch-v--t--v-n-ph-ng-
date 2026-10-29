@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using TroTot.Web.Data;
 using TroTot.Web.Models;
 
+using TroTot.Web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Mọi action POST tự động kiểm tra AntiForgery token
@@ -15,9 +17,10 @@ builder.Services.AddControllersWithViews(o =>
 
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("Default") ??
-        "Server=localhost;Database=TroTotDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true;"));
+        "Server=localhost;Database=TroTotDb;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 builder.Services.AddScoped<IPasswordHasher<AppUser>, PasswordHasher<AppUser>>();
+builder.Services.AddHostedService<DepositCleanupService>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -29,6 +32,17 @@ builder.Services
         o.SlidingExpiration = true;
         o.Cookie.HttpOnly = true;
         o.Cookie.Name = "TroTot.Auth";
+        o.Events.OnRedirectToLogin = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
         o.Events.OnValidatePrincipal = async context =>
         {
             var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -173,6 +187,31 @@ await using (var scope = app.Services.CreateAsyncScope())
         """);
 
     await db.Database.ExecuteSqlRawAsync("""
+        IF COL_LENGTH(N'dbo.Rooms', N'IdentityFrontDocument') IS NULL
+            ALTER TABLE dbo.Rooms ADD IdentityFrontDocument nvarchar(100) NULL;
+        IF COL_LENGTH(N'dbo.Rooms', N'IdentityBackDocument') IS NULL
+            ALTER TABLE dbo.Rooms ADD IdentityBackDocument nvarchar(100) NULL;
+        IF COL_LENGTH(N'dbo.Rooms', N'PropertyDocument') IS NULL
+            ALTER TABLE dbo.Rooms ADD PropertyDocument nvarchar(100) NULL;
+        IF COL_LENGTH(N'dbo.Rooms', N'RoomLegalDocument') IS NULL
+            ALTER TABLE dbo.Rooms ADD RoomLegalDocument nvarchar(100) NULL;
+        IF COL_LENGTH(N'dbo.Rooms', N'LegalStatus') IS NULL
+            ALTER TABLE dbo.Rooms ADD LegalStatus int NOT NULL
+                CONSTRAINT DF_Rooms_LegalStatus DEFAULT (0);
+        IF COL_LENGTH(N'dbo.Rooms', N'AvailabilityStatus') IS NULL
+            ALTER TABLE dbo.Rooms ADD AvailabilityStatus int NOT NULL
+                CONSTRAINT DF_Rooms_AvailabilityStatus DEFAULT (0);
+        IF COL_LENGTH(N'dbo.Rooms', N'HasUnreadOwnerNotification') IS NULL
+            ALTER TABLE dbo.Rooms ADD HasUnreadOwnerNotification bit NOT NULL
+                CONSTRAINT DF_Rooms_HasUnreadOwnerNotification DEFAULT (0);
+        IF COL_LENGTH(N'dbo.RoomReviews', N'IsReviewed') IS NULL
+            ALTER TABLE dbo.RoomReviews ADD IsReviewed bit NOT NULL
+                CONSTRAINT DF_RoomReviews_IsReviewed DEFAULT (0);
+        IF COL_LENGTH(N'dbo.RoomReviews', N'ImagePath') IS NULL
+            ALTER TABLE dbo.RoomReviews ADD ImagePath nvarchar(300) NULL;
+        """);
+
+    await db.Database.ExecuteSqlRawAsync("""
         UPDATE request
         SET RoomId = matchedRoom.Id
         FROM dbo.ViewingRequests AS request
@@ -183,6 +222,61 @@ await using (var scope = app.Services.CreateAsyncScope())
             HAVING COUNT(*) = 1
         ) AS matchedRoom
         WHERE request.RoomId IS NULL;
+        """);
+
+    await db.Database.ExecuteSqlRawAsync("""
+        IF OBJECT_ID(N'dbo.RoomDeposits', N'U') IS NULL
+        BEGIN
+            CREATE TABLE dbo.RoomDeposits (
+                Id int IDENTITY(1,1) NOT NULL CONSTRAINT PK_RoomDeposits PRIMARY KEY,
+                RoomId int NOT NULL,
+                TenantId int NOT NULL,
+                Amount bigint NOT NULL,
+                TransactionCode nvarchar(80) NOT NULL,
+                OrderInfo nvarchar(max) NOT NULL,
+                VnPayTransactionId nvarchar(100) NULL,
+                Status nvarchar(max) NOT NULL,
+                CreatedAt datetime2 NOT NULL,
+                ExpiresAt datetime2 NOT NULL,
+                PaidAt datetime2 NULL,
+                ReceiptCode nvarchar(40) NULL,
+                CONSTRAINT FK_RoomDeposits_Rooms_RoomId FOREIGN KEY (RoomId) REFERENCES dbo.Rooms(Id),
+                CONSTRAINT FK_RoomDeposits_Users_TenantId FOREIGN KEY (TenantId) REFERENCES dbo.Users(Id)
+            );
+        END;
+        IF COL_LENGTH(N'dbo.RoomDeposits', N'TransactionCode') IS NULL
+        BEGIN
+            ALTER TABLE dbo.RoomDeposits ADD TransactionCode nvarchar(80) NULL;
+            UPDATE dbo.RoomDeposits SET TransactionCode = CONCAT(N'LEGACY-', Id) WHERE TransactionCode IS NULL;
+            ALTER TABLE dbo.RoomDeposits ALTER COLUMN TransactionCode nvarchar(80) NOT NULL;
+        END;
+        IF COL_LENGTH(N'dbo.RoomDeposits', N'ExpiresAt') IS NULL
+        BEGIN
+            ALTER TABLE dbo.RoomDeposits ADD ExpiresAt datetime2 NULL;
+            UPDATE dbo.RoomDeposits SET ExpiresAt = DATEADD(MINUTE, 15, CreatedAt) WHERE ExpiresAt IS NULL;
+            ALTER TABLE dbo.RoomDeposits ALTER COLUMN ExpiresAt datetime2 NOT NULL;
+        END;
+        IF COL_LENGTH(N'dbo.RoomDeposits', N'ReceiptCode') IS NULL
+            ALTER TABLE dbo.RoomDeposits ADD ReceiptCode nvarchar(40) NULL;
+        IF EXISTS (SELECT 1 FROM dbo.RoomDeposits WHERE LEN(VnPayTransactionId) > 100)
+            THROW 50001, 'VNPay transaction ID exceeds 100 characters.', 1;
+        IF COL_LENGTH(N'dbo.RoomDeposits', N'VnPayTransactionId') IS NULL
+            ALTER TABLE dbo.RoomDeposits ADD VnPayTransactionId nvarchar(100) NULL;
+        ELSE IF EXISTS (
+            SELECT 1 FROM sys.columns
+            WHERE object_id = OBJECT_ID(N'dbo.RoomDeposits')
+              AND name = N'VnPayTransactionId'
+              AND (system_type_id <> 231 OR max_length <> 200 OR is_nullable <> 1)
+        )
+        BEGIN
+            IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_RoomDeposits_VnPayTransactionId' AND object_id = OBJECT_ID(N'dbo.RoomDeposits'))
+                DROP INDEX IX_RoomDeposits_VnPayTransactionId ON dbo.RoomDeposits;
+            ALTER TABLE dbo.RoomDeposits ALTER COLUMN VnPayTransactionId nvarchar(100) NULL;
+        END;
+        IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_RoomDeposits_TransactionCode' AND object_id = OBJECT_ID(N'dbo.RoomDeposits'))
+            CREATE UNIQUE INDEX IX_RoomDeposits_TransactionCode ON dbo.RoomDeposits(TransactionCode);
+        IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_RoomDeposits_VnPayTransactionId' AND object_id = OBJECT_ID(N'dbo.RoomDeposits'))
+            CREATE UNIQUE INDEX IX_RoomDeposits_VnPayTransactionId ON dbo.RoomDeposits(VnPayTransactionId) WHERE VnPayTransactionId IS NOT NULL;
         """);
 
     var additionalRooms = new[]
